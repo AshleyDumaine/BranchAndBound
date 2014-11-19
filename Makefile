@@ -1,23 +1,23 @@
-CFLAGS=-pthread -g
+SRCS=knapsack_serial.c priorityQueue.c 
+
+OFILES=knapsack_serial.c priorityQueue.c
+
 CC=cc
+LD=cc
 
-SRCS1 = knapsack_serial.c
-OBJS1 = $(SRCS1:.c=.o)
+CFLAGS=-c -g -pthread
+LFLAGS=-g -pthread
 
-SRCS2 = knapsack_threaded.c
-OBJS2 = $(SRCS2:.c=.o)
+all: knap_serial
+	@echo "Done compiling Knapsack_serial!"
 
-all: knapsack_serial knapsack_threaded
+knap_serial: $(OFILES)	
+	$(CC) $(LFLAGS) $(OFILES) -o $@
 
-knapsack_serial: $(OBJS1)
-	$(CC) $(CFLAGS) -o $@ $(OBJS1)
+priorityQueue.o : priorityQueue.c
+	$(CC) $(CFLAGS) $< -o $@
 
-knapsack_threaded: $(OBJS2)
-	$(CC) $(CFLAGS) -o $@ $(OBJS2)
-
-%.o : %.c
-	$(CC) -c $(CFLAGS) $<
+knapsack_serial.o : knapsack_serial.c
+	$(CC) $(CFLAGS) $< -o $@
 
 
-clean:
-	rm -rf a.out $(OBJS1) $(OBJS2) knapsack_serial knapsack_threaded
