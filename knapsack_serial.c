@@ -68,11 +68,11 @@ int main(int argc, char* argv[]) {
   for (i = 0; i < len; i++) {
     Item* n = (Item*)malloc(sizeof(Item));
     fscanf(fp,"%d %d %d", &number, &profit, &weight);
-    double ratio = profit/weight;
+    double ratio = (double)profit/(double)weight;
     n->_weight = weight;
     n->_profit = profit;
     n->_ratio = ratio;
-    printf("ratio: %lf \n", ratio);
+    printf("%d ratio: %lf \n", number, ratio);
     itemArray[i] = n;
   }
   //get max capacity
@@ -82,11 +82,11 @@ int main(int argc, char* argv[]) {
 
 
   //This is just a test to make sure its organized, it works, go test it, etc 
-  /*
+  
   for(i = 0; i <len; i++){
     printf("%lf \n", itemArray[i]->_ratio);
   }
-  */
+  
 
   for (i = 0; i< len; i++) {
     free(itemArray[i]);
