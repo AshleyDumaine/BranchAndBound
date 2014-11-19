@@ -8,13 +8,18 @@ typedef struct Item {
   int _profit;
 } Item;
 
-int compare (Item* arg0, Item* arg1) {
-  if(arg0->_ratio < arg1->_ratio)
+int compare (const void* a, const void* b) {
+  const Item** arg0  = (const Item**)a;
+  const Item** arg1 = (const Item**)b;
+  if((*arg0)->_ratio < (*arg1)->_ratio){
     return -1;
-  else if (arg0->_ratio > arg1->_ratio)
+  }
+  else if ((*arg0)->_ratio > (*arg1)->_ratio){
     return 1;
-  else
+  }
+  else{
     return 0;
+  }
 }
 //changed ub func
 void calculateUpperBound(Item** itemArray, PQNode* node, int len) {
@@ -59,20 +64,29 @@ int main(int argc, char* argv[]) {
   //number is useless, we just need it as a parameter for scanning
   int number,weight,profit;
 
-  Item** itemArray = (Item**)malloc(sizeof(Item*) * len+1);
+  Item** itemArray = (Item**)malloc(sizeof(Item*) * len);
   for (i = 0; i < len; i++) {
     Item* n = (Item*)malloc(sizeof(Item));
     fscanf(fp,"%d %d %d", &number, &profit, &weight);
-    int ratio = profit/weight;
+    double ratio = profit/weight;
     n->_weight = weight;
     n->_profit = profit;
     n->_ratio = ratio;
+    printf("ratio: %lf \n", ratio);
     itemArray[i] = n;
   }
   //get max capacity
   fscanf(fp,"%d",&capacity);
-
+  qsort(itemArray, len, sizeof(Item*),compare); 
   //do stuff
+
+
+  //This is just a test to make sure its organized, it works, go test it, etc 
+  /*
+  for(i = 0; i <len; i++){
+    printf("%lf \n", itemArray[i]->_ratio);
+  }
+  */
 
   for (i = 0; i< len; i++) {
     free(itemArray[i]);
