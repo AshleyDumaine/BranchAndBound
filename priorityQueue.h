@@ -3,7 +3,6 @@
 
 typedef struct PQNode {
   struct PQNode* _next;
-  double _ratio;
   int _key;
   int _value;
   int _cap;
