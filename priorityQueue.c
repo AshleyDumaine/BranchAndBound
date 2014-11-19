@@ -1,11 +1,14 @@
 #include "priorityQueue.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <pthread.h>
 PQueue* makeQueue(int mxs) {
   PQueue* q = (PQueue*)malloc(sizeof(PQueue));
   q->_mxs = mxs;
   q->_head = q->_tail = q->_sz = 0;
   q->_n = (PQNode**)malloc(sizeof(PQNode*)*mxs);
+  pthread_mutex_init(&q->_lock);
+  pthread_cond_init(&q->_condlock);
   return q;
 }
 

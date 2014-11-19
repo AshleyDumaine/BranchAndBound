@@ -38,6 +38,8 @@ typedef struct priorityQueue {
 
   Item** _itArrayptr;
   int _arraylength;
+  pthread_mutex_t _lock;
+  pthread_cond_t _condlock;
 } PQueue;
 
 PQueue* makeQueue(int mxs);
