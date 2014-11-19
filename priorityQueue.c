@@ -7,8 +7,8 @@ PQueue* makeQueue(int mxs) {
   q->_mxs = mxs;
   q->_head = q->_tail = q->_sz = 0;
   q->_n = (PQNode**)malloc(sizeof(PQNode*)*mxs);
-  pthread_mutex_init(&q->_lock);
-  pthread_cond_init(&q->_condlock);
+  pthread_mutex_init(&q->_lock,NULL);
+  pthread_cond_init(&q->_condLock,NULL);
   return q;
 }
 
