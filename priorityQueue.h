@@ -6,9 +6,10 @@ typedef struct PQNode {
   int _key;
   int _value;
   int _cap;
-  int _ub;
-  int _lb;
-  pthread_rwlock_t _lock;
+  int _leftDone;
+  int _rightDone;
+  double _ub;
+  struct LBound* _lb;
 } PQNode;
 
 typedef struct priorityQueue {
