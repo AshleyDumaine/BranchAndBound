@@ -2,36 +2,18 @@
 #include "priorityQueue.h"
 #include <stdlib.h>
 
-//moved this into priorityQueue.h
-/*
-typedef struct Item {
-  double _ratio;
-  int _weight;
-  int _profit;
-} Item;
-*/
-
 int compare (const void* a, const void* b) {
   const Item** arg0  = (const Item**)a;
   const Item** arg1 = (const Item**)b;
-  if((*arg0)->_ratio < (*arg1)->_ratio){
+  if((*arg0)->_ratio < (*arg1)->_ratio)
     return -1;
-  }
-  else if ((*arg0)->_ratio > (*arg1)->_ratio){
+  else if ((*arg0)->_ratio > (*arg1)->_ratio)
     return 1;
-  }
-  else{
+  else
     return 0;
-  }
 }
 //changed ub func
 void calculateUpperBound(Item** itemArray,PQNode* node, int len) {
-
-  //ignore this part
-  //Item** itemArray, PQNode* node, int len
-  //Item** itemArray = node->_itemArray;
-  //int len = node->_arraylength;
-
   int cap = node->_cap;
   int index = node->_index;
   double value = (double)node->_value;
@@ -56,6 +38,18 @@ void calculateUpperBound(Item** itemArray,PQNode* node, int len) {
     }
   }
   node->_ub = value;
+}
+
+void* bb(void* sharedQ) {
+  PQueue* theQueue = (PQueue*)sharedQ;
+  pthread_mutex_lock(&theQueue->_lock);
+  while (isEmpty(theQueue)) {
+    pthread_cond_wait(theQueue->_condLock);
+  }
+  //do stuff
+  Node* node = dequeue(theQueue);
+  pthread_mutex_unlock(&theQueue->_lock);
+
 }
 
 int main(int argc, char* argv[]) {
