@@ -47,7 +47,7 @@ void* bb(void* sharedQ) {
     pthread_cond_wait(theQueue->_condLock, &theQueue->_lock);
   }
   //do stuff
-  Node* node = dequeue(theQueue);
+  PQNode* node = dequeue(theQueue);
   pthread_mutex_unlock(&theQueue->_lock);
   while (node->_cap != 0 || node->_index != 0) {
     
