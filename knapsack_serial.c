@@ -25,7 +25,13 @@ int compare (const void* a, const void* b) {
   }
 }
 //changed ub func
-void calculateUpperBound(Item** itemArray, PQNode* node, int len) {
+void calculateUpperBound(Item** itemArray,PQNode* node, int len) {
+
+  //ignore this part
+  //Item** itemArray, PQNode* node, int len
+  //Item** itemArray = node->_itemArray;
+  //int len = node->_arraylength;
+
   int cap = node->_cap;
   int index = node->_index;
   double value = (double)node->_value;
@@ -83,15 +89,20 @@ int main(int argc, char* argv[]) {
   qsort(itemArray, len, sizeof(Item*),compare); 
   //do stuff involving 1 thread currently
 
-
+  //the main part of the assignment
   int nthreads = 1;
+
+  //The shared queue 
+  PQueue* sharedQ = makeQueue(len); //dynamically grows
+
+  //for the start node
   PQNode* startnode = (PQNode*)malloc(sizeof(PQNode));
   startnode->_value = 0;
   startnode->_cap = capacity;
-  startnode->_itemArray = itemArray;
+  startnode->_index = len-1;
 
 
-  //This is just a test to make sure its organized, it works, go test it, etc  
+  //This is just a test to make sure its organized, it works, go test it, etc 
   for(i = 0; i <len; i++){
     printf("%lf \n", itemArray[i]->_ratio);
   }
