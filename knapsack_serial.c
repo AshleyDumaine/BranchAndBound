@@ -2,7 +2,7 @@
 typedef struct Item {
   double _ratio;
   int _weight;
-  int profit;
+  int _profit;
 } Item
 
 int compare (Item* arg0, Item* arg1) {
@@ -14,13 +14,19 @@ int compare (Item* arg0, Item* arg1) {
     return 0;
 }
 
-int calculateUpperBound(int fk, int cap) {
-  int rc = cap;
-  double p = 0.0;
+void calculateUpperBound(Item**, Node* n, int len) {
+  int cap = n->_cap;
+  int index = node->_index;
+  int value = node->_value;
   int i;
-  for (i = fk; i < cap; i++) {
-    
+  for (i = index; i < len; i++) {
+    Item* item = itemArray[i];
+    if (cap > item->_weight) {
+      cap -= item->_weight;
+      value += item->_profit;
+    }
   }
+  n->_ub = value;
 }
 
 int main(int argc, char* argv[]) {
