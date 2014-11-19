@@ -9,10 +9,10 @@ OBJS2 = $(SRCS2:.c=.o)
 
 all: knapsack_serial knapsack_threaded
 
-hw7_serial: $(OBJS1)
+knapsack_serial: $(OBJS1)
 	$(CC) $(CFLAGS) -o $@ $(OBJS1)
 
-hw7_threaded: $(OBJS2)
+knapsack_threaded: $(OBJS2)
 	$(CC) $(CFLAGS) -o $@ $(OBJS2)
 
 %.o : %.c
