@@ -2,7 +2,6 @@
 #include "priorityQueue.h"
 #include <stdlib.h>
 
-
 typedef struct Item {
   double _ratio;
   int _weight;
@@ -51,14 +50,16 @@ int main(int argc, char* argv[]) {
     return 1;
   }
   char* filename = argv[1];
-  FILE* fp = fopen(filename, 'r');
+  FILE* fp; 
+  fp = fopen(filename, "r");
   //scan some  stuff
   int len, i, capacity;
   fscanf(fp,"%d",&len);
-  //number is useless
+
+  //number is useless, we just need it as a parameter for scanning
   int number,weight,profit;
 
-  Item** itemArray = (Item**)malloc(sizeof(Item*) * len);
+  Item** itemArray = (Item**)malloc(sizeof(Item*) * len+1);
   for (i = 0; i < len; i++) {
     Item* n = (Item*)malloc(sizeof(Item));
     fscanf(fp,"%d %d %d", &number, &profit, &weight);
