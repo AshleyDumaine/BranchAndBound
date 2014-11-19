@@ -46,10 +46,22 @@ void* bb(void* sharedQ) {
   while (isEmpty(theQueue)) {
     pthread_cond_wait(&theQueue->_condLock, &theQueue->_lock);
   }
-  //do stuff
+  //do stuff to one node, basically this is one path
   PQNode* node = deQueue(theQueue);
   pthread_mutex_unlock(&theQueue->_lock);
+
   while (node->_cap != 0 || node->_index != 0) {
+    node->_left = (PQNode*)malloc(sizeof(PQNode));
+    node->_right = (PQNode*)malloc(sizeof(PQNode));
+    node->_left->_index = node->_index++;
+    node->_right->_index = node->_index++;
+
+    //update value and capacity somehow
+    calculateUpperBound(theQueue->_itArrayptr, node->_left, theQueue->_arraylength);
+    calculateUpperBound(theQueue->_itArrayptr, node->_right, theQueue->_arraylength);
+    enQueue(theQueue, node->_right);
+
+    //repeat until certain point, need to define more conditions here
     
   }
 }
@@ -96,7 +108,7 @@ int main(int argc, char* argv[]) {
   startnode->_value = 0;
   startnode->_cap = capacity;
   startnode->_index = len-1;
-
+  enQueue(sharedQ, startnode);
 
   //This is just a test to make sure its organized, it works, go test it, etc 
   for(i = 0; i <len; i++){
