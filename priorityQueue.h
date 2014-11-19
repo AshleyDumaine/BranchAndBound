@@ -2,6 +2,13 @@
 #define __PRIORITYQUEUE_H
 #include <pthread.h>
 
+typedef struct Item {
+  double _ratio;
+  int _weight;
+  int _profit;
+} Item;
+
+
 typedef struct PQNode {
   struct PQNode* _next;
   int _key;
@@ -12,6 +19,10 @@ typedef struct PQNode {
   double _ub;
   struct LBound* _lb;
   int _index;
+
+  Item** _itemArray;
+  struct PQNode* _left;
+  struct PQNode* _right;
 } PQNode;
 
 typedef struct LBound {

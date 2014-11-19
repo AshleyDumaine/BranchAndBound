@@ -2,11 +2,14 @@
 #include "priorityQueue.h"
 #include <stdlib.h>
 
+//moved this into priorityQueue.h
+/*
 typedef struct Item {
   double _ratio;
   int _weight;
   int _profit;
 } Item;
+*/
 
 int compare (const void* a, const void* b) {
   const Item** arg0  = (const Item**)a;
@@ -25,7 +28,7 @@ int compare (const void* a, const void* b) {
 void calculateUpperBound(Item** itemArray, PQNode* node, int len) {
   int cap = node->_cap;
   int index = node->_index;
-  int value = node->_value;
+  double value = (double)node->_value;
   int i;
   for (i = index; i < len; i++) {
     Item* item = itemArray[i];
@@ -40,8 +43,8 @@ void calculateUpperBound(Item** itemArray, PQNode* node, int len) {
       break;
     }
     else if(diff < 0){
-      int div = (cap/item->_weight);
-      int newp = div*(item->_profit);
+      double div = ((double)cap/(double)item->_weight);
+      double newp = div*(double)(item->_profit);
       value = value + newp;
       break;
     }
@@ -78,11 +81,17 @@ int main(int argc, char* argv[]) {
   //get max capacity
   fscanf(fp,"%d",&capacity);
   qsort(itemArray, len, sizeof(Item*),compare); 
-  //do stuff
+  //do stuff involving 1 thread currently
 
 
-  //This is just a test to make sure its organized, it works, go test it, etc 
-  
+  int nthreads = 1;
+  PQNode* startnode = (PQNode*)malloc(sizeof(PQNode));
+  startnode->_value = 0;
+  startnode->_cap = capacity;
+  startnode->_itemArray = itemArray;
+
+
+  //This is just a test to make sure its organized, it works, go test it, etc  
   for(i = 0; i <len; i++){
     printf("%lf \n", itemArray[i]->_ratio);
   }
