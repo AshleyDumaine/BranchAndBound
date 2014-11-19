@@ -44,12 +44,14 @@ void* bb(void* sharedQ) {
   PQueue* theQueue = (PQueue*)sharedQ;
   pthread_mutex_lock(&theQueue->_lock);
   while (isEmpty(theQueue)) {
-    pthread_cond_wait(theQueue->_condLock);
+    pthread_cond_wait(theQueue->_condLock, &theQueue->_lock);
   }
   //do stuff
   Node* node = dequeue(theQueue);
   pthread_mutex_unlock(&theQueue->_lock);
-
+  while (node->_cap != 0 || node->_index != 0) {
+    
+  }
 }
 
 int main(int argc, char* argv[]) {
