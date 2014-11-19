@@ -10,8 +10,8 @@ typedef struct Item {
 
 
 typedef struct PQNode {
-  struct PQNode* _next;
-  int _key;
+  struct PQNode* _next; //not used
+  int _key; //not used
   int _value;
   int _cap;
   int _leftDone;
@@ -20,7 +20,6 @@ typedef struct PQNode {
   struct LBound* _lb;
   int _index;
 
-  Item** _itemArray;
   struct PQNode* _left;
   struct PQNode* _right;
 } PQNode;
@@ -36,6 +35,9 @@ typedef struct priorityQueue {
   int _tail;
   int _sz;
   PQNode** _n;
+
+  Item** _itArrayptr;
+  int _arraylength;
 } PQueue;
 
 PQueue* makeQueue(int mxs);
