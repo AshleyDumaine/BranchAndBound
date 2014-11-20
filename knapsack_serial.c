@@ -79,8 +79,7 @@ void* bb(void* SQueue) {
   PQueue* theQueue = (PQueue*)SQueue;
   //  while(1) {
     //do stuff to one node, basically this is one path
-  int count = 7;
- while(count != 0){
+while(1){
     printf("doing work\n %d \n", isEmpty(theQueue));
       pthread_mutex_lock(&mtx);
       awakeThreads--;
@@ -88,11 +87,11 @@ void* bb(void* SQueue) {
       printf("queue is size is %d \n", theQueue->_sz);
 
       PQNode* original = deQueueWork(theQueue);
-
-      printf("queue is size is %d \n", theQueue->_sz);
-      printf("begining: the value %d\n",original->_value);
-      printf("begin: index %d \n",original->_index);
-      printf("begin: the capacity is %d \n",original->_cap);
+      /*
+      printf("begin the value %d\n",original->_value);
+      printf("begin index %d \n",original->_index);
+      printf("begin the capacity is %d \n",original->_cap);
+      */
       pthread_mutex_lock(&mtx);
       awakeThreads++;
       pthread_mutex_unlock(&mtx);
@@ -106,6 +105,7 @@ void* bb(void* SQueue) {
         pthread_rwlock_wrlock(&(lb->_lock));
 	if(original->_value > lb->_lb){
 	  lb->_lb = original->_value;
+          printf("got here, lower bound will be correct\n");
 	  pthread_rwlock_unlock(&(lb->_lock));
 	}
       }
@@ -119,16 +119,20 @@ void* bb(void* SQueue) {
       else{
 	pathtranverse(theQueue, original);
       }
-      count--;
+      if(isEmpty(theQueue)){
+	break;
+      }
  }
 }
 void pathtranverse(PQueue* theQueue, PQNode* original){
   Item** itemArray = theQueue->_itArrayptr;
   printf("got here\n"); 
       while (original->_cap != 0 && original->_index != 0) {
+	/*
 	printf("the value %d\n",original->_value);
 	printf("index %d \n",original->_index);
 	printf("the capacity is %d \n",original->_cap);
+	*/
 	int index = original->_index;
         calculateUpperBound(itemArray,original,theQueue->_arraylength);
         printf("upper bound %lf \n",original->_ub );
@@ -153,8 +157,10 @@ void pathtranverse(PQueue* theQueue, PQNode* original){
 	right->_cap = original->_cap;
 	right->_value = original->_value;
 	calculateUpperBound(itemArray,right,theQueue->_arraylength);
+	/*
 	printf("at index %d, the right node is value %d, upperbound %lf, capacity %d\n",right->_index,right->_value,right->_ub,right->_cap);
 	printf("upperbound right is %lf\n",right->_ub);
+	*/
         if(right->_ub > lb->_lb){
 	  printf("put this into queue\n");
           enQueueWork(theQueue,right);
@@ -163,7 +169,7 @@ void pathtranverse(PQueue* theQueue, PQNode* original){
 	left->_cap =  original->_cap - itemArray[index]->_weight;
 	left->_value = itemArray[index]->_profit + original->_value;
 	calculateUpperBound(itemArray, left, theQueue->_arraylength);
-        printf("at index %d, the left node is value %d, upperbound %lf, capacity %d\n",left->_index,left->_value,left->_ub,left->_cap);
+	// printf("at index %d, the left node is value %d, upperbound %lf, capacity %d\n",left->_index,left->_value,left->_ub,left->_cap);
 	if(left->_cap < 0){
 	  printf("Too much shit, we're done\n");
 	  break;
