@@ -272,20 +272,21 @@ int main(int argc, char* argv[]) {
   }
   printf("lower bound is: %d \n",lb->_lb);
 
+  void* exitStatus;
+  for(i=0;i<nthreads;i++)
+    pthread_join(threads[i],&exitStatus);
+
   /*
   //This is just a test to make sure its organized, it works, go test it, etc 
   for(i = 0; i <len; i++){
     printf("%lf \n", itemArray[i]->_ratio);
   }
   */
-
   for (i = 0; i< len; i++) {
     free(itemArray[i]);
   }
   free(itemArray);
   free(lb);
-
-  pthread_exit(NULL);
   return 0;
 }
 
