@@ -46,7 +46,7 @@ void calculateUpperBound(Item** itemArray,PQNode* node, int len) {
   double value = (double)node->_value;
   int i;
   
-  for (i = index; i < len; i++) {
+  for (i = index; i < len; i--) {
     Item* item = itemArray[i];
     int diff = cap - item->_weight;
     if(diff > 0){
@@ -110,7 +110,7 @@ void* bb(void* SQueue) {
       right->_lb = lb;
       left->_lb = lb;
       
-      right->_index = original->_index++;
+      right->_index = original->_index--;
       right->_cap = original->_cap;
       right->_value = original->_value;
       calculateUpperBound(itemArray,right,theQueue->_arraylength);
@@ -124,6 +124,7 @@ void* bb(void* SQueue) {
 	break;
       }
       //else you continue below 
+      left->_index = original->_index--;
       left->_cap =  original->_cap - itemArray[index]->_weight;
       left->_value = itemArray[index]->_profit + original->_value;
       calculateUpperBound(itemArray, left, theQueue->_arraylength);
