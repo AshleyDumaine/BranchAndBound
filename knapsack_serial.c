@@ -51,7 +51,7 @@ void* bb(void* sharedQ) {
   pthread_mutex_unlock(&theQueue->_lock);
   Item** itemArray = theQueue->_itArrayptr;
 
-  //check here if ur index is 0 or if your capacity is 0 already for the original, then change your global lb as needed and return
+  //check here if ur index is 0 or if your capacity is 0 already for the original, then change your global lb as needed and RETURN
 
   while (original->_cap != 0 && original->_index != 0) {
     int index = original->_index;
@@ -60,7 +60,9 @@ void* bb(void* sharedQ) {
     PQNode* right = original->_right;
     original->_right = (PQNode*)malloc(sizeof(PQNode));
 
-    //need to set the global lb for right and left here, how to set global?
+    //******************************************************************
+    //I need to set the global lb for right and left here, how to set global/access the global lower bound value, put some code/example below, etc?
+    //*******************************************************************
 
     right->_index = original->_index++;
     right->_cap = original->_cap;
@@ -81,7 +83,12 @@ void* bb(void* sharedQ) {
     original = left;    
   }
   //check if the value of original is greater than your lb, update if necessary
-  //call bb again here?
+
+
+  //***********************************
+  //should bb be called again here so the same thread will go back for more work?
+  //**********************************
+
 }
 
 int main(int argc, char* argv[]) {
@@ -124,18 +131,24 @@ int main(int argc, char* argv[]) {
   sharedQ->_arraylength = len;
   //for the start node
   PQNode* startnode = (PQNode*)malloc(sizeof(PQNode));
+
+  //********************************************************
+  //initialize the lower bound = 0, set the startnode lb=0
+  //****************************************************
+
   startnode->_value = 0;
   startnode->_cap = capacity;
   startnode->_index = len-1;
   enQueue(sharedQ, startnode);
 
-  //pthread create here, call bb
+  //pthread create here, call bb!
 
+  /*
   //This is just a test to make sure its organized, it works, go test it, etc 
   for(i = 0; i <len; i++){
     printf("%lf \n", itemArray[i]->_ratio);
   }
-  
+  */
 
   for (i = 0; i< len; i++) {
     free(itemArray[i]);
