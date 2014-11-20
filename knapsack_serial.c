@@ -2,6 +2,8 @@
 #include "priorityQueue.h"
 #include <stdlib.h>
 
+LBound* lb; //lower bound global
+
 int compare (const void* a, const void* b) {
   const Item** arg0  = (const Item**)a;
   const Item** arg1 = (const Item**)b;
@@ -62,6 +64,8 @@ void* bb(void* sharedQ) {
 
     //******************************************************************
     //I need to set the global lb for right and left here, how to set global/access the global lower bound value, put some code/example below, etc?
+    right->_lb = lb;
+    left->_lb = lb;
     //*******************************************************************
 
     right->_index = original->_index++;
@@ -134,6 +138,10 @@ int main(int argc, char* argv[]) {
 
   //********************************************************
   //initialize the lower bound = 0, set the startnode lb=0
+  lb  = (LBound*)malloc(sizeof(LBound));
+  pthread_rwlock_init(&lb->_lock; NULL);
+  lb->_lb = 0;
+  startnode->_lb  = lb;
   //****************************************************
 
   startnode->_value = 0;
