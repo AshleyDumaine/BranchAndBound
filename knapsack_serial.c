@@ -67,68 +67,69 @@ void calculateUpperBound(Item** itemArray,PQNode* node, int len) {
   node->_ub = value;
 }
 
-void* bb(void* sharedQ) {
-  PQueue* theQueue = (PQueue*)sharedQ;
-  //do stuff to one node, basically this is one path
-  PQNode* original = deQueueWork(theQueue);
-  //if (original == NULL) break;
-  Item** itemArray = theQueue->_itArrayptr;
-
-
-  if(original->_index == 0){
-    pthread_rwlock_wrlock(&(lb->_lock));
-    if(original->_value > lb->_lb){
-      lb->_lb = original->_value;
-      pthread_rwlock_unlock(&(lb->_lock));
-    }
-    return;
-  }
-  if(original->_cap == 0){
-    if(original->_value> lb->_lb){
-      pthread_rwlock_wrlock(&lb->_lock);
-      lb->_lb= original->_value;
-      pthread_rwlock_unlock(&lb->_lock);
-    }
-    return;
-  }
-  while (original->_cap != 0 && original->_index != 0) {
-    printf("the value %d\n",original->_value);
-    int index = original->_index;
-    original->_left = (PQNode*)malloc(sizeof(PQNode));
-    original->_right = (PQNode*)malloc(sizeof(PQNode));
-    PQNode* left = original->_left;
-    PQNode* right = original->_right;
-
-    //right and left, set lower bound
-    right->_lb = lb;
-    left->_lb = lb;
-
-    right->_index = original->_index++;
-    right->_cap = original->_cap;
-    right->_value = original->_value;
-    calculateUpperBound(itemArray,right,theQueue->_arraylength);
+void* bb(void* theQueue) {
+  while(42) {
+    //do stuff to one node, basically this is one path
+    PQNode* original = deQueueWork(theQueue);
+    if (original == NULL) break;
+    Item** itemArray = theQueue->_itArrayptr;
     
-    if(left->_cap < itemArray[index]->_weight){
-      if(lb->_lb < left->_value){
+    if(original->_index == 0){
+      pthread_rwlock_wrlock(&(lb->_lock));
+      if(original->_value > lb->_lb){
+	lb->_lb = original->_value;
+	pthread_rwlock_unlock(&(lb->_lock));
+      }
+      return;
+    }
+    if(original->_cap == 0){
+      if(original->_value> lb->_lb){
 	pthread_rwlock_wrlock(&lb->_lock);
-	lb->_lb = left->_value;
+	lb->_lb= original->_value;
 	pthread_rwlock_unlock(&lb->_lock);
       }
-      break;
+      return;
     }
-    //else you continue below 
-    left->_cap =  original->_cap - itemArray[index]->_weight;
-    left->_value = itemArray[index]->_profit + original->_value;
-    calculateUpperBound(itemArray, left, theQueue->_arraylength);
-    
-    enQueueWork(theQueue,right);
-    free(original);
-    original = left;    
+    while (original->_cap != 0 && original->_index != 0) {
+      printf("the value %d\n",original->_value);
+      int index = original->_index;
+      original->_left = (PQNode*)malloc(sizeof(PQNode));
+      original->_right = (PQNode*)malloc(sizeof(PQNode));
+      PQNode* left = original->_left;
+      PQNode* right = original->_right;
+      
+      //right and left, set lower bound
+      right->_lb = lb;
+      left->_lb = lb;
+      
+      right->_index = original->_index++;
+      right->_cap = original->_cap;
+      right->_value = original->_value;
+      calculateUpperBound(itemArray,right,theQueue->_arraylength);
+      
+      if(left->_cap < itemArray[index]->_weight){
+	if(lb->_lb < left->_value){
+	  pthread_rwlock_wrlock(&lb->_lock);
+	  lb->_lb = left->_value;
+	  pthread_rwlock_unlock(&lb->_lock);
+	}
+	break;
+      }
+      //else you continue below 
+      left->_cap =  original->_cap - itemArray[index]->_weight;
+      left->_value = itemArray[index]->_profit + original->_value;
+      calculateUpperBound(itemArray, left, theQueue->_arraylength);
+      
+      enQueueWork(theQueue,right);
+      free(original);
+      original = left;    
+    }
+    if(original->_value > lb->_lb){
+      lb->_lb= original->_value;
+    }
   }
-  if(original->_value > lb->_lb){
-    lb->_lb= original->_value;
-  }
-
+  return NULL;
+  
   //***********************************
   //should bb be called again here so the same thread will go back for more work??????????????????????????????????????????????????
   //**********************************
