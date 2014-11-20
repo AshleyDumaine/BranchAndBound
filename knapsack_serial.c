@@ -5,7 +5,6 @@
 #include <pthread.h>
 
 LBound* lb; //lower bound global
-int awakeThreads;
 pthread_mutex_t mtx;
 PQNode* deQueueWork(PQueue* twq);
 void enQueueWork(PQueue* twq,PQNode* t);
@@ -28,6 +27,10 @@ PQNode* deQueueWork(PQueue* twq)
   PQNode* t = NULL;
   while (isEmpty(twq)) {
     pthread_cond_wait(&twq->_cond,&twq->_lock);
+    if (twq->_isDone == 1) {
+      return t;
+      //return NULL; 
+    }
   }
   t = deQueue(twq);
   pthread_mutex_unlock(&twq->_lock);
@@ -78,21 +81,30 @@ void* bb(void* SQueue) {
     //do stuff to one node, basically this is one path
 while(1){
   //printf("doing work\n %d \n", isEmpty(theQueue));
-      pthread_mutex_lock(&mtx);
-      awakeThreads--;
-      pthread_mutex_unlock(&mtx);
-      //printf("queue is size is %d \n", theQueue->_sz);
-
-      PQNode* original = deQueueWork(theQueue);
-      /*
-      printf("begin the value %d\n",original->_value);
-      printf("begin index %d \n",original->_index);
-      printf("begin the capacity is %d \n",original->_cap);
-      */
-      pthread_mutex_lock(&mtx);
-      awakeThreads++;
-      pthread_mutex_unlock(&mtx);
-      // if (awakeThreads == 0 && isEmpty(theQueue)) break;
+  pthread_mutex_lock(&theQueue->_lock);
+  if (isEmpty(theQueue) && theQueue->_awakeThreads == 1);
+  {
+    pthread_cond_broadcast(&theQueue->_cond);
+    theQueue->_isDone = 1;
+    //return;
+  }
+  theQueue->_awakeThreads--;
+  printf("awaken threads %d\n",theQueue->_awakeThreads);
+ 
+  pthread_mutex_unlock(&theQueue->_lock);
+  //printf("queue is size is %d \n", theQueue->_sz);
+  
+  PQNode* original = deQueueWork(theQueue);
+  if (original==NULL) break;
+  /*
+    printf("begin the value %d\n",original->_value);
+    printf("begin index %d \n",original->_index);
+    printf("begin the capacity is %d \n",original->_cap);
+  */
+  pthread_mutex_lock(&theQueue->_lock);
+  theQueue->_awakeThreads++;
+  pthread_mutex_unlock(&theQueue->_lock);
+      //if (awakeThreads == 0 && isEmpty(theQueue)) break;
 
       Item** itemArray = theQueue->_itArrayptr;    
       if(original->_index == 0){
@@ -108,11 +120,13 @@ while(1){
 	pthread_rwlock_unlock(&(lb->_lock));
       }
       else if(original->_cap == 0){
+	pthread_rwlock_wrlock(&lb->_lock);
 	if(original->_value> lb->_lb){
-	  pthread_rwlock_wrlock(&lb->_lock);
+	  //pthread_rwlock_wrlock(&lb->_lock);
 	  lb->_lb= original->_value;
-	  pthread_rwlock_unlock(&lb->_lock);
+	  //pthread_rwlock_unlock(&lb->_lock);
 	}
+	pthread_rwlock_unlock(&lb->_lock);
       }
       else{
 	pathtranverse(theQueue, original);
@@ -240,15 +254,16 @@ int main(int argc, char* argv[]) {
 
   //The shared queue 
   PQueue* sharedQ = makeQueue(len); //dynamically grows
+  sharedQ->_isDone = 0;
   sharedQ->_itArrayptr = itemArray;
   sharedQ->_arraylength = len;
   //for the start node
   PQNode* startnode = (PQNode*)malloc(sizeof(PQNode));
 
   pthread_mutex_init(&mtx, NULL);
-  pthread_mutex_lock(&mtx);
-  awakeThreads = nthreads;
-  pthread_mutex_unlock(&mtx);
+  pthread_mutex_lock(&sharedQ->_lock);
+  sharedQ->_awakeThreads = nthreads;
+  pthread_mutex_unlock(&sharedQ->_lock);
 
   lb  = (LBound*)malloc(sizeof(LBound));
   pthread_rwlock_init(&lb->_lock, NULL);
