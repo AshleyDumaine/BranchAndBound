@@ -28,8 +28,9 @@ PQNode* deQueueWork(PQueue* twq)
   while (isEmpty(twq)) {
     pthread_cond_wait(&twq->_cond,&twq->_lock);
     if (twq->_isDone == 1) {
-      return t;
-      //return NULL; 
+      //return t;
+      pthread_mutex_unlock(&twq->_lock);
+      return NULL; 
     }
   }
   t = deQueue(twq);
@@ -74,66 +75,74 @@ void calculateUpperBound(Item** itemArray,PQNode* node, int len) {
   node->_ub = value;
 }
 
-/***********still working on this part down here, no touchie, kay? XD**********************************/
 void* bb(void* SQueue) {
   PQueue* theQueue = (PQueue*)SQueue;
   //  while(1) {
     //do stuff to one node, basically this is one path
 while(1){
   //printf("doing work\n %d \n", isEmpty(theQueue));
-  pthread_mutex_lock(&theQueue->_lock);
-  if (isEmpty(theQueue) && theQueue->_awakeThreads == 1);
-  {
-    pthread_cond_broadcast(&theQueue->_cond);
-    theQueue->_isDone = 1;
-    //return;
-  }
+  pthread_mutex_lock(&(theQueue->_lock));
+  printf("queue is %d, thread is %d\n",isEmpty(theQueue), theQueue->_awakeThreads);
+  if (isEmpty(theQueue) && theQueue->_awakeThreads == 1)
+    {
+      printf("hey i broadcasted \n");
+      pthread_cond_broadcast(&(theQueue->_cond));
+      theQueue->_isDone = 1;
+      
+    }
+  else{
   theQueue->_awakeThreads--;
+  }
   printf("awaken threads %d\n",theQueue->_awakeThreads);
- 
-  pthread_mutex_unlock(&theQueue->_lock);
+  
+  pthread_mutex_unlock(&(theQueue->_lock));
   //printf("queue is size is %d \n", theQueue->_sz);
   
   PQNode* original = deQueueWork(theQueue);
-  if (original==NULL) break;
+  if (original==NULL){
+    printf("I'm NULL!\n");
+    break;
+  }
   /*
     printf("begin the value %d\n",original->_value);
     printf("begin index %d \n",original->_index);
     printf("begin the capacity is %d \n",original->_cap);
   */
-  pthread_mutex_lock(&theQueue->_lock);
+  pthread_mutex_lock(&(theQueue->_lock));
   theQueue->_awakeThreads++;
-  pthread_mutex_unlock(&theQueue->_lock);
-      //if (awakeThreads == 0 && isEmpty(theQueue)) break;
-
-      Item** itemArray = theQueue->_itArrayptr;    
-      if(original->_index == 0){
-	if(original->_cap >= itemArray[0]->_weight){
-	  original->_value = itemArray[0]->_profit + original->_value;
-	}
-        pthread_rwlock_wrlock(&(lb->_lock));
-	if(original->_value > lb->_lb){
-	  lb->_lb = original->_value;
-          //printf("got here, lower bound will be correct\n");
-	  //pthread_rwlock_unlock(&(lb->_lock)); NO
-	}
-	pthread_rwlock_unlock(&(lb->_lock));
-      }
-      else if(original->_cap == 0){
-	pthread_rwlock_wrlock(&lb->_lock);
-	if(original->_value> lb->_lb){
-	  //pthread_rwlock_wrlock(&lb->_lock);
-	  lb->_lb= original->_value;
-	  //pthread_rwlock_unlock(&lb->_lock);
-	}
-	pthread_rwlock_unlock(&lb->_lock);
-      }
-      else{
-	pathtranverse(theQueue, original);
-      }
-      if(isEmpty(theQueue)){
-	break;
-      }
+  pthread_mutex_unlock(&(theQueue->_lock));
+  //if(original==NULL)break;
+  //if (awakeThreads == 0 && isEmpty(theQueue)) break;
+  
+  Item** itemArray = theQueue->_itArrayptr;    
+  if(original->_index == 0){
+    if(original->_cap >= itemArray[0]->_weight){
+      original->_value = itemArray[0]->_profit + original->_value;
+    }
+    pthread_rwlock_wrlock(&(lb->_lock));
+    if(original->_value > lb->_lb){
+      lb->_lb = original->_value;
+      //printf("got here, lower bound will be correct\n");
+      //pthread_rwlock_unlock(&(lb->_lock)); NO
+    }
+    pthread_rwlock_unlock(&(lb->_lock));
+  }
+  else if(original->_cap == 0){
+    pthread_rwlock_wrlock(&lb->_lock);
+    if(original->_value > lb->_lb){
+      //pthread_rwlock_wrlock(&lb->_lock);
+      lb->_lb= original->_value;
+      //pthread_rwlock_unlock(&lb->_lock);
+    }
+    pthread_rwlock_unlock(&lb->_lock);
+  }
+  else{
+    pathtranverse(theQueue, original);
+  } 
+  
+  if(isEmpty(theQueue)){
+    continue;
+   }
  }
 }
 void pathtranverse(PQueue* theQueue, PQNode* original){
@@ -288,6 +297,7 @@ int main(int argc, char* argv[]) {
   printf("lower bound is: %d \n",lb->_lb);
   pthread_rwlock_unlock(&lb->_lock);
   void* exitStatus;
+  
   for(i=0;i<nthreads;i++)
     pthread_join(threads[i],&exitStatus);
 
@@ -297,6 +307,7 @@ int main(int argc, char* argv[]) {
     printf("%lf \n", itemArray[i]->_ratio);
   }
   */
+  printf("joined\n");
   for (i = 0; i< len; i++) {
     free(itemArray[i]);
   }
