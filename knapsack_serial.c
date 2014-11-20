@@ -20,22 +20,22 @@ int compare (const void* a, const void* b) {
 
 PQNode* deQueueWork(PQueue* twq)
 {
-  pthread_mutex_lock(&twq->_mtx);
+  pthread_mutex_lock(&twq->_lock);
   PQNode* t = NULL;
-  while (isEmpty(twq->_theQueue)) {
-    pthread_cond_wait(&twq->_cond,&twq->_mtx);
+  while (isEmpty(twq)) {
+    pthread_cond_wait(&twq->_cond,&twq->_lock);
   }
-  t = deQueue(twq->_theQueue);
-  pthread_mutex_unlock(&twq->_mtx);
+  t = deQueue(twq);
+  pthread_mutex_unlock(&twq->_lock);
   return t;
 }
 
 void enQueueWork(PQueue* twq,PQNode* t)
 {
-  pthread_mutex_lock(&twq->_mtx);
-  enQueue(twq->_theQueue,t);
+  pthread_mutex_lock(&twq->_lock);
+  enQueue(twq,t);
   pthread_cond_signal(&twq->_cond);
-  pthread_mutex_unlock(&twq->_mtx);
+  pthread_mutex_unlock(&twq->_lock);
 }
 
 void calculateUpperBound(Item** itemArray,PQNode* node, int len) {
@@ -69,7 +69,7 @@ void* bb(void* sharedQ) {
   PQueue* theQueue = (PQueue*)sharedQ;
   //do stuff to one node, basically this is one path
   PQNode* original = deQueueWork(theQueue);
-  if (original == NULL) break;
+  //if (original == NULL) break;
   Item** itemArray = theQueue->_itArrayptr;
 
   if(original->_index == 0){
