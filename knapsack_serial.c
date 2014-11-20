@@ -14,7 +14,7 @@ int compare (const void* a, const void* b) {
   else
     return 0;
 }
-//changed ub func
+
 void calculateUpperBound(Item** itemArray,PQNode* node, int len) {
   int cap = node->_cap;
   int index = node->_index;
@@ -53,8 +53,23 @@ void* bb(void* sharedQ) {
   pthread_mutex_unlock(&theQueue->_lock);
   Item** itemArray = theQueue->_itArrayptr;
 
-  //check here if ur index is 0 or if your capacity is 0 already for the original, then change your global lb as needed and RETURN
-
+  if(original->_index == 0){
+    if(original->_value > lb->_lb){
+      //************************************************
+      //need to put a write lock first???
+      lb->_lb = original->_value;
+      //unlock afterwards???
+      //P.S, whats the read lock? put the code below commented out =D
+      //***********************************************
+    }
+    return;
+  }
+  if(original->_cap == 0){
+    if(original->_value> lb->_lb){
+      lb->_lb= original->_value;
+    }
+    return;
+  }
   while (original->_cap != 0 && original->_index != 0) {
     int index = original->_index;
     PQNode* left = original->_left;
@@ -62,11 +77,9 @@ void* bb(void* sharedQ) {
     PQNode* right = original->_right;
     original->_right = (PQNode*)malloc(sizeof(PQNode));
 
-    //******************************************************************
-    //I need to set the global lb for right and left here, how to set global/access the global lower bound value, put some code/example below, etc?
+    //right and left, set lower bound
     right->_lb = lb;
     left->_lb = lb;
-    //*******************************************************************
 
     right->_index = original->_index++;
     right->_cap = original->_cap;
@@ -74,7 +87,9 @@ void* bb(void* sharedQ) {
     calculateUpperBound(itemArray,right,theQueue->_arraylength);
     
     if(left->_cap < itemArray[index]->_weight){
-      //check lb, if new lb for left is better than current, update the current lb
+      if(lb->_lb < left->_value){
+	lb->_lb = left->_value;
+      }
       break;
     }
     //else you continue below 
@@ -86,11 +101,12 @@ void* bb(void* sharedQ) {
     free(original);
     original = left;    
   }
-  //check if the value of original is greater than your lb, update if necessary
-
+  if(original->_value > lb->_lb){
+    lb->_lb= original->_value;
+  }
 
   //***********************************
-  //should bb be called again here so the same thread will go back for more work?
+  //should bb be called again here so the same thread will go back for more work??????????????????????????????????????????????????
   //**********************************
 
 }
@@ -136,20 +152,20 @@ int main(int argc, char* argv[]) {
   //for the start node
   PQNode* startnode = (PQNode*)malloc(sizeof(PQNode));
 
-  //********************************************************
-  //initialize the lower bound = 0, set the startnode lb=0
   lb  = (LBound*)malloc(sizeof(LBound));
-  pthread_rwlock_init(&lb->_lock; NULL);
+  pthread_rwlock_init(&lb->_lock, NULL);
   lb->_lb = 0;
   startnode->_lb  = lb;
-  //****************************************************
 
   startnode->_value = 0;
   startnode->_cap = capacity;
   startnode->_index = len-1;
   enQueue(sharedQ, startnode);
 
+  //*****************************************************
   //pthread create here, call bb!
+
+  //***************************************************
 
   /*
   //This is just a test to make sure its organized, it works, go test it, etc 
@@ -162,6 +178,7 @@ int main(int argc, char* argv[]) {
     free(itemArray[i]);
   }
   free(itemArray);
+  free(lb);
   return 0;
 }
 
