@@ -77,7 +77,7 @@ void* bb(void* SQueue) {
     //do stuff to one node, basically this is one path
       pthread_mutex_lock(&mtx);
       awakeThreads--;
-      pthraed_mutex_unlock(&mtx);
+      pthread_mutex_unlock(&mtx);
       PQNode* original = deQueueWork(theQueue);
       pthread_mutex_lock(&mtx);
       awakeThreads++;
@@ -196,7 +196,7 @@ int main(int argc, char* argv[]) {
 
   pthread_mutex_init(&mtx, NULL);
   pthread_mutex_lock(&mtx);
-  awakeThreads = nThreads;
+  awakeThreads = nthreads;
   pthread_mutex_unlock(&mtx);
   lb  = (LBound*)malloc(sizeof(LBound));
   pthread_rwlock_init(&lb->_lock, NULL);
