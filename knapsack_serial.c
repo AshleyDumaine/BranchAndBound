@@ -74,13 +74,12 @@ void* bb(void* sharedQ) {
   //if (original == NULL) break;
   Item** itemArray = theQueue->_itArrayptr;
 
-  printf("I'm here\n");
 
   if(original->_index == 0){
+    pthread_rwlock_wrlock(&(lb->_lock));
     if(original->_value > lb->_lb){
-      pthread_rwlock_wrlock(&lb->_lock);
       lb->_lb = original->_value;
-      pthread_rwlock_unlock(&lb->_lock);
+      pthread_rwlock_unlock(&(lb->_lock));
     }
     return;
   }
@@ -93,11 +92,12 @@ void* bb(void* sharedQ) {
     return;
   }
   while (original->_cap != 0 && original->_index != 0) {
+    printf("the value %d\n",original->_value);
     int index = original->_index;
-    PQNode* left = original->_left;
     original->_left = (PQNode*)malloc(sizeof(PQNode));
-    PQNode* right = original->_right;
     original->_right = (PQNode*)malloc(sizeof(PQNode));
+    PQNode* left = original->_left;
+    PQNode* right = original->_right;
 
     //right and left, set lower bound
     right->_lb = lb;
