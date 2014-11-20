@@ -73,7 +73,7 @@ void calculateUpperBound(Item** itemArray,PQNode* node, int len) {
 
 void* bb(void* SQueue) {
   PQueue* theQueue = (PQueue*)SQueue;
-    while(1) {
+  while(1) {
     //do stuff to one node, basically this is one path
       pthread_mutex_lock(&mtx);
       awakeThreads--;
@@ -143,9 +143,9 @@ void* bb(void* SQueue) {
       }
       if(original->_value > lb->_lb){
 	lb->_lb= original->_value;
+       }
       }
-    }
-    return NULL;
+      //return NULL;
   
   //***********************************
   //should bb be called again here so the same thread will go back for more work??????????????????????????????????????????????????
