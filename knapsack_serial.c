@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "priorityQueue.h"
 #include <stdlib.h>
+#include <pthread.h>
 
 LBound* lb; //lower bound global
 
@@ -185,7 +186,7 @@ int main(int argc, char* argv[]) {
   startnode->_value = 0;
   startnode->_cap = capacity;
   startnode->_index = len-1;
-  enQueue(sharedQ, startnode);
+  enQueueWork(sharedQ, startnode);
 
   //*****************************************************
   //pthread create here, call bb!
