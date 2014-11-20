@@ -106,8 +106,9 @@ while(1){
 	if(original->_value > lb->_lb){
 	  lb->_lb = original->_value;
           printf("got here, lower bound will be correct\n");
-	  pthread_rwlock_unlock(&(lb->_lock));
+	  //pthread_rwlock_unlock(&(lb->_lock)); NO
 	}
+	pthread_rwlock_unlock(&(lb->_lock));
       }
       else if(original->_cap == 0){
 	if(original->_value> lb->_lb){
@@ -178,8 +179,9 @@ void pathtranverse(PQueue* theQueue, PQNode* original){
           pthread_rwlock_wrlock(&lb->_lock);
           if(lb->_lb < original->_value){
             lb->_lb = original->_value;
-            pthread_rwlock_unlock(&lb->_lock);
+            //pthread_rwlock_unlock(&lb->_lock); NO
           }
+          pthread_rwlock_unlock(&(lb->_lock));
           printf("done with all items \n\n");
           break;
         }
