@@ -45,6 +45,7 @@ void calculateUpperBound(Item** itemArray,PQNode* node, int len) {
   int index = node->_index;
   double value = (double)node->_value;
   int i;
+  
   for (i = index; i < len; i++) {
     Item* item = itemArray[i];
     int diff = cap - item->_weight;
@@ -58,12 +59,13 @@ void calculateUpperBound(Item** itemArray,PQNode* node, int len) {
       break;
     }
     else if(diff < 0){
-      double div = ((double)cap/(double)item->_weight);
-      double newp = div*(double)(item->_profit);
+      double div = ((double)cap/(double)(item->_weight));
+      double newp = div*((double)(item->_profit));
       value = value + newp;
       break;
     }
   }
+  printf("upper bound here %lf \n",value);
   node->_ub = value;
 }
 
@@ -100,7 +102,8 @@ void* bb(void* SQueue) {
       PQNode* right = original->_right;
 
       calculateUpperBound(itemArray,original,theQueue->_arraylength);
-      printf("upper bound %d \n",original->_ub );
+
+      //printf("upper bound %d \n",original->_ub );
 
 
       //right and left, set lower bound
