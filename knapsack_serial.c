@@ -6,12 +6,8 @@
 LBound* lb; //lower bound global
 int awakeThreads;
 pthread_mutex_t mtx;
-
 PQNode* deQueueWork(PQueue* twq);
-
 void enQueueWork(PQueue* twq,PQNode* t);
-
-
 void pathtranverse(PQueue* theQueue, PQNode* original);
 
 int compare (const void* a, const void* b) {
@@ -272,8 +268,9 @@ int main(int argc, char* argv[]) {
       exit(-1);
     }
   }
+  pthread_rwlock_rdlock(&lb->_lock);
   printf("lower bound is: %d \n",lb->_lb);
-
+  pthread_rwlock_unlock(&lb->_lock);
   void* exitStatus;
   for(i=0;i<nthreads;i++)
     pthread_join(threads[i],&exitStatus);
