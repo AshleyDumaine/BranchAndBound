@@ -31,6 +31,8 @@ typedef struct priorityQueue {
   int _head;
   int _tail;
   int _sz;
+  int _isDone;
+  int _awakeThreads;
   PQNode** _n;
   Item** _itArrayptr;
   int _arraylength;
