@@ -47,23 +47,41 @@ void* bb(void* sharedQ) {
     pthread_cond_wait(&theQueue->_condLock, &theQueue->_lock);
   }
   //do stuff to one node, basically this is one path
-  PQNode* node = deQueue(theQueue);
+  PQNode* original = deQueue(theQueue);
   pthread_mutex_unlock(&theQueue->_lock);
+  Item** itemArray = theQueue->_itArrayptr;
 
-  while (node->_cap != 0 || node->_index != 0) {
-    node->_left = (PQNode*)malloc(sizeof(PQNode));
-    node->_right = (PQNode*)malloc(sizeof(PQNode));
-    node->_left->_index = node->_index++;
-    node->_right->_index = node->_index++;
+  //check here if ur index is 0 or if your capacity is 0 already for the original, then change your global lb as needed and return
 
-    //update value and capacity somehow
-    calculateUpperBound(theQueue->_itArrayptr, node->_left, theQueue->_arraylength);
-    calculateUpperBound(theQueue->_itArrayptr, node->_right, theQueue->_arraylength);
-    enQueue(theQueue, node->_right);
+  while (original->_cap != 0 && original->_index != 0) {
+    int index = original->_index;
+    PQNode* left = original->_left;
+    original->_left = (PQNode*)malloc(sizeof(PQNode));
+    PQNode* right = original->_right;
+    original->_right = (PQNode*)malloc(sizeof(PQNode));
 
-    //repeat until certain point, need to define more conditions here
+    //need to set the global lb for right and left here, how to set global?
+
+    right->_index = original->_index++;
+    right->_cap = original->_cap;
+    right->_value = original->_value;
+    calculateUpperBound(itemArray,right,theQueue->_arraylength);
     
+    if(left->_cap < itemArray[index]->_weight){
+      //check lb, if new lb for left is better than current, update the current lb
+      break;
+    }
+    //else you continue below 
+    left->_cap =  original->_cap - itemArray[index]->_weight;
+    left->_value = itemArray[index]->_profit + original->_value;
+    calculateUpperBound(itemArray, left, theQueue->_arraylength);
+    
+    enQueue(theQueue,right);
+    //free original;
+    original = left;    
   }
+  //check if the value of original is greater than your lb, update if necessary
+  //call bb again here?
 }
 
 int main(int argc, char* argv[]) {
@@ -102,13 +120,16 @@ int main(int argc, char* argv[]) {
 
   //The shared queue 
   PQueue* sharedQ = makeQueue(len); //dynamically grows
-
+  sharedQ->_itArrayptr = itemArray;
+  sharedQ->_arraylength = len;
   //for the start node
   PQNode* startnode = (PQNode*)malloc(sizeof(PQNode));
   startnode->_value = 0;
   startnode->_cap = capacity;
   startnode->_index = len-1;
   enQueue(sharedQ, startnode);
+
+  //pthread create here, call bb
 
   //This is just a test to make sure its organized, it works, go test it, etc 
   for(i = 0; i <len; i++){
