@@ -77,7 +77,7 @@ void* bb(void* sharedQ) {
     calculateUpperBound(itemArray, left, theQueue->_arraylength);
     
     enQueue(theQueue,right);
-    //free original;
+    free(original);
     original = left;    
   }
   //check if the value of original is greater than your lb, update if necessary
