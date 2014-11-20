@@ -65,16 +65,16 @@ void calculateUpperBound(Item** itemArray,PQNode* node, int len) {
       break;
     }
   }
-  printf("upper bound here %lf \n",value);
+  //printf("upper bound here %lf \n",value);
   node->_ub = value;
 }
 
 void* bb(void* SQueue) {
   PQueue* theQueue = (PQueue*)SQueue;
-  //  while(1) {
+    while(1) {
     //do stuff to one node, basically this is one path
     PQNode* original = deQueueWork(theQueue);
-    //    if (original == NULL) break;
+    if (original == NULL) break;
     Item** itemArray = theQueue->_itArrayptr;    
     if(original->_index == 0){
       pthread_rwlock_wrlock(&(lb->_lock));
@@ -115,9 +115,10 @@ void* bb(void* SQueue) {
       right->_value = original->_value;
       calculateUpperBound(itemArray,right,theQueue->_arraylength);
       
-      if(left->_cap < itemArray[index]->_weight){
+
+      if(original->_cap < itemArray[index]->_weight){
+	pthread_rwlock_wrlock(&lb->_lock);
 	if(lb->_lb < left->_value){
-	  pthread_rwlock_wrlock(&lb->_lock);
 	  lb->_lb = left->_value;
 	  pthread_rwlock_unlock(&lb->_lock);
 	}
@@ -136,8 +137,8 @@ void* bb(void* SQueue) {
     if(original->_value > lb->_lb){
       lb->_lb= original->_value;
     }
-    //  }
-    //return NULL;
+    }
+    return NULL;
   
   //***********************************
   //should bb be called again here so the same thread will go back for more work??????????????????????????????????????????????????
