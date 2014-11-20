@@ -6,6 +6,7 @@
 LBound* lb; //lower bound global
 
 PQNode* deQueueWork(PQueue* twq);
+
 void enQueueWork(PQueue* twq,PQNode* t);
 
 int compare (const void* a, const void* b) {
@@ -73,16 +74,13 @@ void* bb(void* sharedQ) {
   //if (original == NULL) break;
   Item** itemArray = theQueue->_itArrayptr;
 
+  printf("I'm here\n");
+
   if(original->_index == 0){
     if(original->_value > lb->_lb){
-      //************************************************
-      //need to put a write lock first???
       pthread_rwlock_wrlock(&lb->_lock);
       lb->_lb = original->_value;
       pthread_rwlock_unlock(&lb->_lock);
-      //unlock afterwards???
-      //P.S, whats the read lock? put the code below commented out =D
-      //***********************************************
     }
     return;
   }
@@ -188,10 +186,16 @@ int main(int argc, char* argv[]) {
   startnode->_index = len-1;
   enQueueWork(sharedQ, startnode);
 
-  //*****************************************************
-  //pthread create here, call bb!
-
-  //***************************************************
+  int status;
+  pthread_t threads[nthreads];
+  for(i=0;i<nthreads;i++){
+    status = pthread_create(&threads[i],NULL,bb,(void*)sharedQ);
+    if(status){
+      printf("ERROR; return code from pthread_create() is %d\n", status);
+      exit(-1);
+    }
+  }
+  printf("lower bound is: %d \n",lb->_lb);
 
   /*
   //This is just a test to make sure its organized, it works, go test it, etc 
@@ -205,6 +209,8 @@ int main(int argc, char* argv[]) {
   }
   free(itemArray);
   free(lb);
+
+  pthread_exit(NULL);
   return 0;
 }
 
