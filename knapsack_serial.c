@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "priorityQueue.h"
 #include <stdlib.h>
+#include <string.h>
 #include <pthread.h>
 
 LBound* lb; //lower bound global
@@ -76,11 +77,11 @@ void* bb(void* SQueue) {
   //  while(1) {
     //do stuff to one node, basically this is one path
 while(1){
-    printf("doing work\n %d \n", isEmpty(theQueue));
+  //printf("doing work\n %d \n", isEmpty(theQueue));
       pthread_mutex_lock(&mtx);
       awakeThreads--;
       pthread_mutex_unlock(&mtx);
-      printf("queue is size is %d \n", theQueue->_sz);
+      //printf("queue is size is %d \n", theQueue->_sz);
 
       PQNode* original = deQueueWork(theQueue);
       /*
@@ -101,7 +102,7 @@ while(1){
         pthread_rwlock_wrlock(&(lb->_lock));
 	if(original->_value > lb->_lb){
 	  lb->_lb = original->_value;
-          printf("got here, lower bound will be correct\n");
+          //printf("got here, lower bound will be correct\n");
 	  //pthread_rwlock_unlock(&(lb->_lock)); NO
 	}
 	pthread_rwlock_unlock(&(lb->_lock));
@@ -123,7 +124,7 @@ while(1){
 }
 void pathtranverse(PQueue* theQueue, PQNode* original){
   Item** itemArray = theQueue->_itArrayptr;
-  printf("got here\n"); 
+  //printf("got here\n"); 
       while (original->_cap != 0 && original->_index != 0) {
 	/*
 	printf("the value %d\n",original->_value);
@@ -132,7 +133,7 @@ void pathtranverse(PQueue* theQueue, PQNode* original){
 	*/
 	int index = original->_index;
         calculateUpperBound(itemArray,original,theQueue->_arraylength);
-        printf("upper bound %lf \n",original->_ub );
+        //printf("upper bound %lf \n",original->_ub );
 
 	if(original->_ub < lb->_lb){
 	  break;
@@ -159,7 +160,7 @@ void pathtranverse(PQueue* theQueue, PQNode* original){
 	printf("upperbound right is %lf\n",right->_ub);
 	*/
         if(right->_ub > lb->_lb){
-	  printf("put this into queue\n");
+	  //printf("put this into queue\n");
           enQueueWork(theQueue,right);
 	}	 
 	left->_index = (original->_index) - 1;
@@ -168,7 +169,7 @@ void pathtranverse(PQueue* theQueue, PQNode* original){
 	calculateUpperBound(itemArray, left, theQueue->_arraylength);
 	// printf("at index %d, the left node is value %d, upperbound %lf, capacity %d\n",left->_index,left->_value,left->_ub,left->_cap);
 	if(left->_cap < 0){
-	  printf("Too much shit, we're done\n");
+	  //printf("Too much shit, we're done\n");
 	  break;
 	}
         if(original->_cap < itemArray[index]->_weight){
@@ -178,7 +179,7 @@ void pathtranverse(PQueue* theQueue, PQNode* original){
             //pthread_rwlock_unlock(&lb->_lock); NO
           }
           pthread_rwlock_unlock(&(lb->_lock));
-          printf("done with all items \n\n");
+          //printf("done with all items \n\n");
           break;
         }
 
@@ -193,7 +194,7 @@ void pathtranverse(PQueue* theQueue, PQNode* original){
       if(original->_value >= lb->_lb){
 	lb->_lb= original->_value;
       }
-      printf("Done with everything\n\n");
+      //printf("Done with everything\n\n");
       //  }
       return;
   
@@ -205,7 +206,7 @@ void pathtranverse(PQueue* theQueue, PQNode* original){
 
 int main(int argc, char* argv[]) {
   if(argc != 2) {
-    fprintf(stderr, "usage: knapsack_serial filename\n");
+    fprintf(stderr, "usage: knapsack_serial filename thread count\n");
     return 1;
   }
   char* filename = argv[1];
@@ -235,7 +236,7 @@ int main(int argc, char* argv[]) {
   //do stuff involving 1 thread currently
 
   //the main part of the assignment
-  int nthreads = 1;
+  int nthreads = atoi(argv[2]);
 
   //The shared queue 
   PQueue* sharedQ = makeQueue(len); //dynamically grows
