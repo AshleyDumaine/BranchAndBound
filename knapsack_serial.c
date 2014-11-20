@@ -79,7 +79,7 @@ void* bb(void* sharedQ) {
       //need to put a write lock first???
       pthread_rwlock_wrlock(&lb->_lock);
       lb->_lb = original->_value;
-      pthread_wrlock_unlock(&lb->_lock);
+      pthread_rwlock_unlock(&lb->_lock);
       //unlock afterwards???
       //P.S, whats the read lock? put the code below commented out =D
       //***********************************************
