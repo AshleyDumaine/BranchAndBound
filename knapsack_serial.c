@@ -11,6 +11,9 @@ PQNode* deQueueWork(PQueue* twq);
 
 void enQueueWork(PQueue* twq,PQNode* t);
 
+
+void pathtranverse(PQueue* theQueue, PQNode* original);
+
 int compare (const void* a, const void* b) {
   const Item** arg0  = (const Item**)a;
   const Item** arg1 = (const Item**)b;
@@ -48,7 +51,7 @@ void calculateUpperBound(Item** itemArray,PQNode* node, int len) {
   double value = (double)node->_value;
   int i;
   
-  for (i = index; i < len; i--) {
+  for (i = index; i >= 0; i--) {
     Item* item = itemArray[i];
     int diff = cap - item->_weight;
     if(diff > 0){
@@ -71,81 +74,124 @@ void calculateUpperBound(Item** itemArray,PQNode* node, int len) {
   node->_ub = value;
 }
 
+/***********still working on this part down here, no touchie, kay? XD**********************************/
 void* bb(void* SQueue) {
   PQueue* theQueue = (PQueue*)SQueue;
-  while(1) {
+  //  while(1) {
     //do stuff to one node, basically this is one path
+  int count = 7;
+ while(count != 0){
+    printf("doing work\n %d \n", isEmpty(theQueue));
       pthread_mutex_lock(&mtx);
       awakeThreads--;
       pthread_mutex_unlock(&mtx);
+      printf("queue is size is %d \n", theQueue->_sz);
+
       PQNode* original = deQueueWork(theQueue);
+
+      printf("queue is size is %d \n", theQueue->_sz);
+      printf("begining: the value %d\n",original->_value);
+      printf("begin: index %d \n",original->_index);
+      printf("begin: the capacity is %d \n",original->_cap);
       pthread_mutex_lock(&mtx);
       awakeThreads++;
       pthread_mutex_unlock(&mtx);
-      if (awakeThreads == 0 && isEmpty(theQueue)) break;
+      // if (awakeThreads == 0 && isEmpty(theQueue)) break;
+
       Item** itemArray = theQueue->_itArrayptr;    
       if(original->_index == 0){
-	pthread_rwlock_wrlock(&(lb->_lock));
+	if(original->_cap >= itemArray[0]->_weight){
+	  original->_value = itemArray[0]->_profit + original->_value;
+	}
+        pthread_rwlock_wrlock(&(lb->_lock));
 	if(original->_value > lb->_lb){
 	  lb->_lb = original->_value;
 	  pthread_rwlock_unlock(&(lb->_lock));
 	}
-	return;
       }
-      if(original->_cap == 0){
+      else if(original->_cap == 0){
 	if(original->_value> lb->_lb){
 	  pthread_rwlock_wrlock(&lb->_lock);
 	  lb->_lb= original->_value;
 	  pthread_rwlock_unlock(&lb->_lock);
 	}
-	return;
       }
+      else{
+	pathtranverse(theQueue, original);
+      }
+      count--;
+ }
+}
+void pathtranverse(PQueue* theQueue, PQNode* original){
+  Item** itemArray = theQueue->_itArrayptr;
+  printf("got here\n"); 
       while (original->_cap != 0 && original->_index != 0) {
 	printf("the value %d\n",original->_value);
 	printf("index %d \n",original->_index);
+	printf("the capacity is %d \n",original->_cap);
 	int index = original->_index;
+        calculateUpperBound(itemArray,original,theQueue->_arraylength);
+        printf("upper bound %lf \n",original->_ub );
+
+	if(original->_ub < lb->_lb){
+	  break;
+	}
+
+	//else do stuff with left and right nodes
 	original->_left = (PQNode*)malloc(sizeof(PQNode));
 	original->_right = (PQNode*)malloc(sizeof(PQNode));
 	PQNode* left = original->_left;
 	PQNode* right = original->_right;
-	
-	calculateUpperBound(itemArray,original,theQueue->_arraylength);
-	
-	//printf("upper bound %d \n",original->_ub );
-	
+        
 	
 	//right and left, set lower bound
 	right->_lb = lb;
 	left->_lb = lb;
 	
-	right->_index = original->_index--;
+	
+	right->_index = (original->_index) - 1;
 	right->_cap = original->_cap;
 	right->_value = original->_value;
 	calculateUpperBound(itemArray,right,theQueue->_arraylength);
-	
-	
-	if(original->_cap < itemArray[index]->_weight){
-	  pthread_rwlock_wrlock(&lb->_lock);
-	  if(lb->_lb < left->_value){
-	    lb->_lb = left->_value;
-	    pthread_rwlock_unlock(&lb->_lock);
-	  }
-	  break;
-	}
-	//else you continue below 
-	left->_index = original->_index--;
+	printf("at index %d, the right node is value %d, upperbound %lf, capacity %d\n",right->_index,right->_value,right->_ub,right->_cap);
+	printf("upperbound right is %lf\n",right->_ub);
+        if(right->_ub > lb->_lb){
+	  printf("put this into queue\n");
+          enQueueWork(theQueue,right);
+	}	 
+	left->_index = (original->_index) - 1;
 	left->_cap =  original->_cap - itemArray[index]->_weight;
 	left->_value = itemArray[index]->_profit + original->_value;
 	calculateUpperBound(itemArray, left, theQueue->_arraylength);
-	enQueueWork(theQueue,right);
+        printf("at index %d, the left node is value %d, upperbound %lf, capacity %d\n",left->_index,left->_value,left->_ub,left->_cap);
+	if(left->_cap < 0){
+	  printf("Too much shit, we're done\n");
+	  break;
+	}
+        if(original->_cap < itemArray[index]->_weight){
+          pthread_rwlock_wrlock(&lb->_lock);
+          if(lb->_lb < original->_value){
+            lb->_lb = original->_value;
+            pthread_rwlock_unlock(&lb->_lock);
+          }
+          printf("done with all items \n\n");
+          break;
+        }
+
+
+	if(left->_ub < lb->_lb){
+	  break;
+	}
 	free(original);
 	original = left;    
+
       }
-      if(original->_value > lb->_lb){
+      if(original->_value >= lb->_lb){
 	lb->_lb= original->_value;
-       }
       }
-      //return NULL;
+      printf("Done with everything\n\n");
+      //  }
+      return;
   
   //***********************************
   //should bb be called again here so the same thread will go back for more work??????????????????????????????????????????????????
@@ -198,6 +244,7 @@ int main(int argc, char* argv[]) {
   pthread_mutex_lock(&mtx);
   awakeThreads = nthreads;
   pthread_mutex_unlock(&mtx);
+
   lb  = (LBound*)malloc(sizeof(LBound));
   pthread_rwlock_init(&lb->_lock, NULL);
   lb->_lb = 0;
