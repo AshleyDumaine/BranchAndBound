@@ -4,6 +4,9 @@
 
 LBound* lb; //lower bound global
 
+PQNode* deQueueWork(PQueue* twq);
+void enQueueWork(PQueue* twq,PQNode* t);
+
 int compare (const void* a, const void* b) {
   const Item** arg0  = (const Item**)a;
   const Item** arg1 = (const Item**)b;
@@ -13,6 +16,26 @@ int compare (const void* a, const void* b) {
     return 1;
   else
     return 0;
+}
+
+PQNode* deQueueWork(PQueue* twq)
+{
+  pthread_mutex_lock(&twq->_mtx);
+  PQNode* t = NULL;
+  while (isEmpty(twq->_theQueue)) {
+    pthread_cond_wait(&twq->_cond,&twq->_mtx);
+  }
+  t = deQueue(twq->_theQueue);
+  pthread_mutex_unlock(&twq->_mtx);
+  return t;
+}
+
+void enQueueWork(PQueue* twq,PQNode* t)
+{
+  pthread_mutex_lock(&twq->_mtx);
+  enQueue(twq->_theQueue,t);
+  pthread_cond_signal(&twq->_cond);
+  pthread_mutex_unlock(&twq->_mtx);
 }
 
 void calculateUpperBound(Item** itemArray,PQNode* node, int len) {
@@ -44,20 +67,18 @@ void calculateUpperBound(Item** itemArray,PQNode* node, int len) {
 
 void* bb(void* sharedQ) {
   PQueue* theQueue = (PQueue*)sharedQ;
-  pthread_mutex_lock(&theQueue->_lock);
-  while (isEmpty(theQueue)) {
-    pthread_cond_wait(&theQueue->_condLock, &theQueue->_lock);
-  }
   //do stuff to one node, basically this is one path
-  PQNode* original = deQueue(theQueue);
-  pthread_mutex_unlock(&theQueue->_lock);
+  PQNode* original = deQueueWork(theQueue);
+  if (original == NULL) break;
   Item** itemArray = theQueue->_itArrayptr;
 
   if(original->_index == 0){
     if(original->_value > lb->_lb){
       //************************************************
       //need to put a write lock first???
+      pthread_rwlock_wrlock(&lb->_lock);
       lb->_lb = original->_value;
+      pthread_wrlock_unlock(&lb->_lock);
       //unlock afterwards???
       //P.S, whats the read lock? put the code below commented out =D
       //***********************************************
@@ -66,7 +87,9 @@ void* bb(void* sharedQ) {
   }
   if(original->_cap == 0){
     if(original->_value> lb->_lb){
+      pthread_rwlock_wrlock(&lb->_lock);
       lb->_lb= original->_value;
+      pthread_rwlock_unlock(&lb->_lock);
     }
     return;
   }
@@ -88,7 +111,9 @@ void* bb(void* sharedQ) {
     
     if(left->_cap < itemArray[index]->_weight){
       if(lb->_lb < left->_value){
+	pthread_rwlock_wrlock(&lb->_lock);
 	lb->_lb = left->_value;
+	pthread_rwlock_unlock(&lb->_lock);
       }
       break;
     }
@@ -97,7 +122,7 @@ void* bb(void* sharedQ) {
     left->_value = itemArray[index]->_profit + original->_value;
     calculateUpperBound(itemArray, left, theQueue->_arraylength);
     
-    enQueue(theQueue,right);
+    enQueueWork(theQueue,right);
     free(original);
     original = left;    
   }
