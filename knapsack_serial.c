@@ -67,13 +67,13 @@ void calculateUpperBound(Item** itemArray,PQNode* node, int len) {
   node->_ub = value;
 }
 
-void* bb(void* theQueue) {
-  while(42) {
+void* bb(void* SQueue) {
+  PQueue* theQueue = (PQueue*)SQueue;
+  //  while(1) {
     //do stuff to one node, basically this is one path
     PQNode* original = deQueueWork(theQueue);
-    if (original == NULL) break;
-    Item** itemArray = theQueue->_itArrayptr;
-    
+    //    if (original == NULL) break;
+    Item** itemArray = theQueue->_itArrayptr;    
     if(original->_index == 0){
       pthread_rwlock_wrlock(&(lb->_lock));
       if(original->_value > lb->_lb){
@@ -92,12 +92,17 @@ void* bb(void* theQueue) {
     }
     while (original->_cap != 0 && original->_index != 0) {
       printf("the value %d\n",original->_value);
+      printf("index %d \n",original->_index);
       int index = original->_index;
       original->_left = (PQNode*)malloc(sizeof(PQNode));
       original->_right = (PQNode*)malloc(sizeof(PQNode));
       PQNode* left = original->_left;
       PQNode* right = original->_right;
-      
+
+      calculateUpperBound(itemArray,original,theQueue->_arraylength);
+      printf("upper bound %d \n",original->_ub );
+
+
       //right and left, set lower bound
       right->_lb = lb;
       left->_lb = lb;
@@ -119,7 +124,7 @@ void* bb(void* theQueue) {
       left->_cap =  original->_cap - itemArray[index]->_weight;
       left->_value = itemArray[index]->_profit + original->_value;
       calculateUpperBound(itemArray, left, theQueue->_arraylength);
-      
+;
       enQueueWork(theQueue,right);
       free(original);
       original = left;    
@@ -127,8 +132,8 @@ void* bb(void* theQueue) {
     if(original->_value > lb->_lb){
       lb->_lb= original->_value;
     }
-  }
-  return NULL;
+    //  }
+    //return NULL;
   
   //***********************************
   //should bb be called again here so the same thread will go back for more work??????????????????????????????????????????????????
@@ -159,7 +164,7 @@ int main(int argc, char* argv[]) {
     n->_weight = weight;
     n->_profit = profit;
     n->_ratio = ratio;
-    printf("%d ratio: %lf \n", number, ratio);
+    //printf("%d ratio: %lf \n", number, ratio);
     itemArray[i] = n;
   }
   //get max capacity
