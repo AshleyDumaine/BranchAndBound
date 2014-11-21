@@ -1,6 +1,6 @@
-SRCS=knapsack_serial.c priorityQueue.c 
+SRCS=knapsack.c priorityQueue.c 
 
-OFILES=knapsack_serial.c priorityQueue.c
+OFILES=knapsack.c priorityQueue.c
 
 CC=cc
 LD=cc
@@ -8,16 +8,16 @@ LD=cc
 CFLAGS=-c -g -pthread
 LFLAGS=-g -pthread
 
-all: knap_serial
-	@echo "Done compiling Knapsack_serial!"
+all: knapsack
+	@echo "Done compiling!"
 
-knap_serial: $(OFILES)	
+knapsack: $(OFILES)	
 	$(CC) $(LFLAGS) $(OFILES) -o $@
 
 priorityQueue.o : priorityQueue.c
 	$(CC) $(CFLAGS) $< -o $@
 
-knapsack_serial.o : knapsack_serial.c
+knapsack.o : knapsack.c
 	$(CC) $(CFLAGS) $< -o $@
 
 
