@@ -152,7 +152,6 @@ void pathtranverse(PQueue* theQueue, PQNode* original){
 	//else do stuff with left and right nodes
 	original->_left = (PQNode*)malloc(sizeof(PQNode));
 	original->_right = (PQNode*)malloc(sizeof(PQNode));
-	printf("malloc left and right\n");
 	PQNode* left = original->_left;
 	PQNode* right = original->_right;
 	//right and left, set lower bound
@@ -177,7 +176,6 @@ void pathtranverse(PQueue* theQueue, PQNode* original){
 	}
 	else{
 	  if(right!=NULL){
-	    printf("freed node\n");
 	    free(right);
 	  }
 	} 
@@ -188,7 +186,6 @@ void pathtranverse(PQueue* theQueue, PQNode* original){
 	calculateUpperBound(itemArray, left, theQueue->_arraylength);
 	// printf("at index %d, the left node is value %d, upperbound %lf, capacity %d\n",left->_index,left->_value,left->_ub,left->_cap);
 	if(left->_cap < 0){
-	  printf("freed another node\n");
 	  free(left);
 	  //printf("Too much shit, we're done\n");
 	  break;
@@ -211,7 +208,6 @@ void pathtranverse(PQueue* theQueue, PQNode* original){
 	  break;
 	}
 	pthread_rwlock_unlock(&lb->_lock);
-	printf("freed dis shit\n");
 	PQNode* temp = original;
 	free(temp);
 	original = left;   
@@ -221,7 +217,6 @@ void pathtranverse(PQueue* theQueue, PQNode* original){
 	lb->_lb= original->_value;
       }
       pthread_rwlock_unlock(&lb->_lock);
-      printf("freed a node\n");
       free(original);
       return;
 }
