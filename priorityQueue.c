@@ -32,9 +32,11 @@ void destroyQueue(heap_t* q) {
     free(q->_itArrayptr[i]);
     }*/
   //free(q->_itArrayptr);
-  heap_free(q);
+  
   pthread_cond_destroy(&q->_cond);
   pthread_mutex_destroy(&q->_lock);
+  heap_free(q);
+
 
   //  free(q->_n);
   //  free(q);

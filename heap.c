@@ -12,8 +12,8 @@
 int heap_compare(void *a, void *b) { 
   PQNode* node1 = (PQNode*)a;
   PQNode* node2 = (PQNode*)b;
-  int i = node1->_ub;
-  int k = node2->_ub;
+  double i = node1->_ub;
+  double k = node2->_ub;
   
   return k < i;
   //return (int)b < (int)a; 
