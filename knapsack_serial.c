@@ -4,6 +4,8 @@
 #include <string.h>
 #include <pthread.h>
 
+#include <time.h>
+
 LBound* lb; //lower bound global
 pthread_mutex_t mtx;
 PQNode* deQueueWork(PQueue* twq);
@@ -208,6 +210,7 @@ void pathtranverse(PQueue* theQueue, PQNode* original){
 }
 
 int main(int argc, char* argv[]) {
+
   if(argc != 3) {
     fprintf(stderr, "usage: knapsack_serial filename thread count\n");
     return 1;
@@ -264,6 +267,8 @@ int main(int argc, char* argv[]) {
   startnode->_index = len-1;
   enQueueWork(sharedQ, startnode);
 
+  clock_t tic = clock();
+
   int status;
   pthread_t threads[nthreads];
   for(i=0;i<nthreads;i++){
@@ -283,12 +288,15 @@ int main(int argc, char* argv[]) {
   printf("lower bound is: %d \n",lb->_lb);
   pthread_rwlock_unlock(&lb->_lock);
 
+  clock_t toc = clock();
+  printf("Elapsed: %f seconds \n", (double)(toc-tic)/CLOCKS_PER_SEC);
   /*
   //This is just a test to make sure its organized, it works, go test it, etc 
   for(i = 0; i <len; i++){
     printf("%lf \n", itemArray[i]->_ratio);
   }
   */
+
   for (i = 0; i< len; i++)
     free(itemArray[i]);
   free(itemArray);
