@@ -91,8 +91,9 @@ while(1){
   pthread_mutex_unlock(&(theQueue->_lock));
   //printf("queue is size is %d \n", theQueue->_sz);
   PQNode* original = deQueueWork(theQueue);
-  if (original==NULL)
+  if (original==NULL){
     return;
+  }
   /*
     printf("begin the value %d\n",original->_value);
     printf("begin index %d \n",original->_index);
@@ -112,12 +113,14 @@ while(1){
     pthread_rwlock_wrlock(&(lb->_lock));
     if(original->_value > lb->_lb){
       lb->_lb = original->_value;
-      free(original);
-      //printf("got here, lower bound will be correct\n");
     }
+    free(original);
+      //printf("got here, lower bound will be correct\n");
     pthread_rwlock_unlock(&(lb->_lock));
   }
+
   else if(original->_cap == 0){
+    printf("Using other shit\n");
     pthread_rwlock_wrlock(&lb->_lock);
     if(original->_value > lb->_lb)
       lb->_lb= original->_value;
@@ -175,10 +178,8 @@ void pathtranverse(PQueue* theQueue, PQNode* original){
 	  
 	}
 	else{
-	  if(right!=NULL){
 	    free(right);
-	  }
-	} 
+	}
 	pthread_rwlock_unlock(&lb->_lock);
 	left->_index = (original->_index) - 1;
 	left->_cap =  original->_cap - itemArray[index]->_weight;
@@ -197,7 +198,7 @@ void pathtranverse(PQueue* theQueue, PQNode* original){
             //pthread_rwlock_unlock(&lb->_lock); NO
           }
           pthread_rwlock_unlock(&(lb->_lock));
-	  
+	 
           //printf("done with all items \n\n");
           break;
         }
