@@ -24,7 +24,7 @@ typedef struct heap_t_ {
   pthread_cond_t _cond;
 
 } heap_t;
-#endif)
+#endif
 
 
 heap_t *heap_create(int size);

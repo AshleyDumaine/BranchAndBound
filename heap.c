@@ -1,12 +1,23 @@
 #include "heap.h"
 #include <errno.h>
 #include <string.h>
-#include <stdlib.h>                                                                              
-// Macros for accessing left/right/parent indices for a heap node               
+#include <stdlib.h>                                                            
+
+#include "priorityQueue.h"
+// Macros for accessing left/right/parent indices for a heap node             
 #define HEAP_LEFT(i) (2*i+1)
 #define HEAP_RIGHT(i) (2*i+2)
 #define HEAP_PARENT(i) ((i-1)/2)
-int heap_compare(void *a, void *b) { return (int)b < (int)a; }                                                                              
+
+int heap_compare(void *a, void *b) { 
+  PQNode* node1 = (PQNode*)a;
+  PQNode* node2 = (PQNode*)b;
+  int i = node1->_ub;
+  int k = node2->_ub;
+  
+  return k < i;
+  //return (int)b < (int)a; 
+}                                                                              
 heap_t *heap_create(int size)
 {
   heap_t *h = calloc(1, sizeof(heap_t));
@@ -38,8 +49,14 @@ int heap_resize(heap_t *h, int size)
 
 int heap_insert(heap_t *h, void *item)
 {
-  if (h->last == h->size) return -ENOMEM;
-  if (item == NULL) return -EINVAL;
+  if (h->last == h->size){ 
+    return -1;
+    //return -ENOMEM;
+  }
+  if (item == NULL) {
+    return -1;
+    // return -EINVAL;
+  }
   int i = ++h->last;
   void **H = h->data;
   H[i] = item;
