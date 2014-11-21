@@ -173,7 +173,10 @@ void pathtranverse(PQueue* theQueue, PQNode* original){
         if(right->_ub > lb->_lb){
 	  //printf("put this into queue\n");
           enQueueWork(theQueue,right);
-	}	 
+	}
+	else{
+	  free(right);
+	} 
 	pthread_rwlock_unlock(&lb->_lock);
 	left->_index = (original->_index) - 1;
 	left->_cap =  original->_cap - itemArray[index]->_weight;
@@ -181,6 +184,7 @@ void pathtranverse(PQueue* theQueue, PQNode* original){
 	calculateUpperBound(itemArray, left, theQueue->_arraylength);
 	// printf("at index %d, the left node is value %d, upperbound %lf, capacity %d\n",left->_index,left->_value,left->_ub,left->_cap);
 	if(left->_cap < 0){
+	  free(left);
 	  //printf("Too much shit, we're done\n");
 	  break;
 	}
@@ -197,6 +201,7 @@ void pathtranverse(PQueue* theQueue, PQNode* original){
         }
 	pthread_rwlock_rdlock(&lb->_lock);
 	if(left->_ub < lb->_lb){
+	  free(left);
 	  pthread_rwlock_unlock(&lb->_lock);
 	  break;
 	}
