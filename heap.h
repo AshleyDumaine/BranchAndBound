@@ -7,3 +7,12 @@ typedef struct heap_t_ {
 } heap_t;
 #endif
 
+heap_t *heap_create(int size);
+void heap_free(heap_t *h);
+int heap_resize(heap_t *h, int size);
+int heap_insert(heap_t *h, void *item);
+void *heap_remove_root(heap_t *h);
+
+
+
+
