@@ -1,11 +1,31 @@
 #ifndef __HEAP_H__
 #define __HEAP_H__
+
+#include <pthread.h>
+
+typedef struct Item {
+  double _ratio;
+  int _weight;
+  int _profit;
+} Item;
+
+
+
 typedef struct heap_t_ {
   int last;
   int size;
   void *data;
+
+  int _isDone;
+  int _awakeThreads;
+  Item** _itArrayptr;
+  int _arraylength;
+  pthread_mutex_t _lock;
+  pthread_cond_t _cond;
+
 } heap_t;
-#endif
+#endif)
+
 
 heap_t *heap_create(int size);
 void heap_free(heap_t *h);

@@ -1,6 +1,6 @@
-SRCS=knapsack.c priorityQueue.c 
+SRCS=knapsack.c priorityQueue.c heap.c
 
-OFILES=knapsack.c priorityQueue.c
+OFILES=knapsack.c priorityQueue.c heap.c
 
 CC=cc
 LD=cc
@@ -20,4 +20,6 @@ priorityQueue.o : priorityQueue.c
 knapsack.o : knapsack.c
 	$(CC) $(CFLAGS) $< -o $@
 
+heap.o : heap.c
+	$(CC) $(CFLAGS) $< -o $@
 

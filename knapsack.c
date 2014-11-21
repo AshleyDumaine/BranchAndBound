@@ -5,11 +5,13 @@
 #include <pthread.h>
 #include <time.h>
 
+#include "heap.h"
+
 LBound* lb; //lower bound global
 pthread_mutex_t mtx;
-PQNode* deQueueWork(PQueue* twq);
-void enQueueWork(PQueue* twq,PQNode* t);
-void pathtranverse(PQueue* theQueue, PQNode* original);
+PQNode* deQueueWork(heap_t* twq);
+void enQueueWork(heap_t* twq,PQNode* t);
+void pathtranverse(heap_t* theQueue, PQNode* original);
 
 int compare (const void* a, const void* b) {
   const Item** arg0  = (const Item**)a;
@@ -22,7 +24,7 @@ int compare (const void* a, const void* b) {
     return 0;
 }
 
-PQNode* deQueueWork(PQueue* twq)
+PQNode* deQueueWork(heap_t* twq)
 {
   pthread_mutex_lock(&twq->_lock);
   while (isEmpty(twq)) {
@@ -38,7 +40,7 @@ PQNode* deQueueWork(PQueue* twq)
   return n;
 }
 
-void enQueueWork(PQueue* twq,PQNode* t)
+void enQueueWork(heap_t* twq,PQNode* t)
 {
   pthread_mutex_lock(&twq->_lock);
   enQueue(twq,t);
@@ -76,7 +78,7 @@ void calculateUpperBound(Item** itemArray,PQNode* node, int len) {
 }
 
 void* bb(void* SQueue) {
-  PQueue* theQueue = (PQueue*)SQueue;
+  heap_t* theQueue = (heap_t*)SQueue;
   //  while(1) {
     //do stuff to one node, basically this is one path
 while(1){
@@ -133,7 +135,7 @@ while(1){
     continue;
  }
 }
-void pathtranverse(PQueue* theQueue, PQNode* original){
+void pathtranverse(heap_t* theQueue, PQNode* original){
   Item** itemArray = theQueue->_itArrayptr;
   //printf("got here\n"); 
       while (original->_cap != 0 && original->_index != 0) {
@@ -257,7 +259,7 @@ int main(int argc, char* argv[]) {
   int nthreads = atoi(argv[2]);
 
   //The shared queue 
-  PQueue* sharedQ = makeQueue(len); //dynamically grows
+  heap_t* sharedQ = makeQueue(len); //dynamically grows (it might not...)
   sharedQ->_isDone = 0;
   sharedQ->_itArrayptr = itemArray;
   sharedQ->_arraylength = len;

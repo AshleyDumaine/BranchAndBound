@@ -76,23 +76,4 @@ void *heap_remove_root(heap_t *h)
   return root;
 }
 
-/*
-int main(int argc, char *argv[])
-{
-  heap_t *heap = heap_create(12);
-  heap_insert(heap, (void*)5);
-  heap_insert(heap, (void*)1);
-  heap_insert(heap, (void*)3);
-  heap_insert(heap, (void*)9);
-  heap_insert(heap, (void*)2);
-  heap_insert(heap, (void*)3);
-  heap_insert(heap, (void*)4);
-  heap_insert(heap, (void*)6);
-  void * v;
-  while (v = heap_remove_root(heap)) {
-    printf("%d\n", (int)v);
-  }
-  return 0;
-}
-*/
 
