@@ -24,18 +24,17 @@ int compare (const void* a, const void* b) {
 PQNode* deQueueWork(PQueue* twq)
 {
   pthread_mutex_lock(&twq->_lock);
-  PQNode* t = NULL;
   while (isEmpty(twq)) {
-    pthread_cond_wait(&twq->_cond,&twq->_lock);
-    if (twq->_isDone == 1) {
-      //return t;
+    if(twq->_isDone == 0) 
+      pthread_cond_wait(&twq->_cond,&twq->_lock);
+    else {
       pthread_mutex_unlock(&twq->_lock);
       return NULL; 
     }
   }
-  t = deQueue(twq);
+  PQNode* n = deQueue(twq);
   pthread_mutex_unlock(&twq->_lock);
-  return t;
+  return n;
 }
 
 void enQueueWork(PQueue* twq,PQNode* t)
@@ -80,28 +79,23 @@ void* bb(void* SQueue) {
   //  while(1) {
     //do stuff to one node, basically this is one path
 while(1){
-  //printf("doing work\n %d \n", isEmpty(theQueue));
   pthread_mutex_lock(&(theQueue->_lock));
-  printf("queue is %d, thread is %d\n",isEmpty(theQueue), theQueue->_awakeThreads);
   if (isEmpty(theQueue) && theQueue->_awakeThreads == 1)
     {
-      printf("hey i broadcasted \n");
+      printf("broadcasted \n");
       pthread_cond_broadcast(&(theQueue->_cond));
       theQueue->_isDone = 1;
-      
     }
-  else{
-  theQueue->_awakeThreads--;
-  }
-  printf("awaken threads %d\n",theQueue->_awakeThreads);
-  
+  else
+    theQueue->_awakeThreads--;
+  printf("awake threads %d\n",theQueue->_awakeThreads);
   pthread_mutex_unlock(&(theQueue->_lock));
   //printf("queue is size is %d \n", theQueue->_sz);
   
   PQNode* original = deQueueWork(theQueue);
   if (original==NULL){
     printf("I'm NULL!\n");
-    break;
+    return;
   }
   /*
     printf("begin the value %d\n",original->_value);
@@ -293,13 +287,15 @@ int main(int argc, char* argv[]) {
       exit(-1);
     }
   }
+  void* exitStatus;
+
+  for(i=0;i<nthreads;i++) {
+    pthread_join(threads[i],&exitStatus);
+    printf("joined\n");
+  }
   pthread_rwlock_rdlock(&lb->_lock);
   printf("lower bound is: %d \n",lb->_lb);
   pthread_rwlock_unlock(&lb->_lock);
-  void* exitStatus;
-  
-  for(i=0;i<nthreads;i++)
-    pthread_join(threads[i],&exitStatus);
 
   /*
   //This is just a test to make sure its organized, it works, go test it, etc 
@@ -307,7 +303,6 @@ int main(int argc, char* argv[]) {
     printf("%lf \n", itemArray[i]->_ratio);
   }
   */
-  printf("joined\n");
   for (i = 0; i< len; i++) {
     free(itemArray[i]);
   }
