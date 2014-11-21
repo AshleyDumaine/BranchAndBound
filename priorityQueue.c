@@ -7,7 +7,7 @@
 
 //might not be dynamically growing, u might wanna use heap resize method
 heap_t* makeQueue(int mxs) {
-  heap_t h = heap_create(mxs);
+  heap_t* h = heap_create(mxs);
   return h;
   /*
   PQueue* q = (PQueue*)malloc(sizeof(PQueue));
@@ -76,7 +76,7 @@ void enQueue(heap_t* q,PQNode* node)
   */
 }
 
-PQNode* deQueue(heap_t q)
+PQNode* deQueue(heap_t* q)
 {
   /*
   PQNode* rv = q->_n[q->_head];

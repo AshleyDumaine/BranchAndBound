@@ -2,6 +2,7 @@
 #define __PRIORITYQUEUE_H
 #include <pthread.h>
 
+#include "heap.h"
 /*
 typedef struct Item {
   double _ratio;
@@ -41,10 +42,10 @@ typedef struct priorityQueue {
   pthread_cond_t _cond;
 } PQueue;
 
-PQueue* makeQueue(int mxs);
-void  destroyQueue(PQueue* theQueue);
-void enQueue(PQueue* theQueue, PQNode* n);
-PQNode* deQueue(PQueue* theQueue);
-int isEmpty(PQueue* theQueue);
+heap_t* makeQueue(int mxs);
+void  destroyQueue(heap_t* theQueue);
+void enQueue(heap_t* theQueue, PQNode* n);
+PQNode* deQueue(heap_t* theQueue);
+int isEmpty(heap_t* theQueue);
 #endif
 
