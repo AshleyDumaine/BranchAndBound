@@ -112,6 +112,7 @@ while(1){
     pthread_rwlock_wrlock(&(lb->_lock));
     if(original->_value > lb->_lb){
       lb->_lb = original->_value;
+      free(original);
       //printf("got here, lower bound will be correct\n");
     }
     pthread_rwlock_unlock(&(lb->_lock));
@@ -120,6 +121,7 @@ while(1){
     pthread_rwlock_wrlock(&lb->_lock);
     if(original->_value > lb->_lb)
       lb->_lb= original->_value;
+    free(original);
     pthread_rwlock_unlock(&lb->_lock);
   }
   else{
@@ -189,6 +191,7 @@ void pathtranverse(PQueue* theQueue, PQNode* original){
             //pthread_rwlock_unlock(&lb->_lock); NO
           }
           pthread_rwlock_unlock(&(lb->_lock));
+	  
           //printf("done with all items \n\n");
           break;
         }
@@ -202,9 +205,11 @@ void pathtranverse(PQueue* theQueue, PQNode* original){
 	original = left;   
       }
       pthread_rwlock_rdlock(&lb->_lock);
-      if(original->_value >= lb->_lb)
+      if(original->_value >= lb->_lb){
 	lb->_lb= original->_value;
+      }
       pthread_rwlock_unlock(&lb->_lock);
+      free(original);
       return;
 }
 
@@ -224,7 +229,7 @@ int main(int argc, char* argv[]) {
   //number is useless, we just need it as a parameter for scanning
   int number,weight,profit;
 
-  Item** itemArray = (Item**)malloc(sizeof(Item*) * len);
+  Item** itemArray = (Item**)malloc(sizeof(Item*)*len);
   for (i = 0; i < len; i++) {
     Item* n = (Item*)malloc(sizeof(Item));
     fscanf(fp,"%d %d %d", &number, &profit, &weight);
@@ -299,10 +304,11 @@ int main(int argc, char* argv[]) {
   pthread_mutex_destroy(&mtx);
   pthread_rwlock_destroy(&lb->_lock);
   free(lb);
-  for (i = 0; i< len; i++)
+  for (i = 0; i< len; i++){
     free(itemArray[i]);
+  }
   free(itemArray);
-  free(lb);
+  
   return 0;
 }
 
