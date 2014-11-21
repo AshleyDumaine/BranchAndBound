@@ -120,7 +120,6 @@ while(1){
   }
 
   else if(original->_cap == 0){
-    printf("Using other shit\n");
     pthread_rwlock_wrlock(&lb->_lock);
     if(original->_value > lb->_lb)
       lb->_lb= original->_value;
