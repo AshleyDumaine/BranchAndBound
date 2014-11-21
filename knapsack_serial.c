@@ -82,21 +82,16 @@ while(1){
   pthread_mutex_lock(&(theQueue->_lock));
   if (isEmpty(theQueue) && theQueue->_awakeThreads == 1)
     {
-      printf("broadcasted \n");
       pthread_cond_broadcast(&(theQueue->_cond));
       theQueue->_isDone = 1;
     }
   else
     theQueue->_awakeThreads--;
-  printf("awake threads %d\n",theQueue->_awakeThreads);
   pthread_mutex_unlock(&(theQueue->_lock));
   //printf("queue is size is %d \n", theQueue->_sz);
-  
   PQNode* original = deQueueWork(theQueue);
-  if (original==NULL){
-    printf("I'm NULL!\n");
+  if (original==NULL)
     return;
-  }
   /*
     printf("begin the value %d\n",original->_value);
     printf("begin index %d \n",original->_index);
@@ -117,26 +112,21 @@ while(1){
     if(original->_value > lb->_lb){
       lb->_lb = original->_value;
       //printf("got here, lower bound will be correct\n");
-      //pthread_rwlock_unlock(&(lb->_lock)); NO
     }
     pthread_rwlock_unlock(&(lb->_lock));
   }
   else if(original->_cap == 0){
     pthread_rwlock_wrlock(&lb->_lock);
-    if(original->_value > lb->_lb){
-      //pthread_rwlock_wrlock(&lb->_lock);
+    if(original->_value > lb->_lb)
       lb->_lb= original->_value;
-      //pthread_rwlock_unlock(&lb->_lock);
-    }
     pthread_rwlock_unlock(&lb->_lock);
   }
   else{
     pathtranverse(theQueue, original);
   } 
   
-  if(isEmpty(theQueue)){
+  if(isEmpty(theQueue))
     continue;
-   }
  }
 }
 void pathtranverse(PQueue* theQueue, PQNode* original){
@@ -151,23 +141,23 @@ void pathtranverse(PQueue* theQueue, PQNode* original){
 	int index = original->_index;
         calculateUpperBound(itemArray,original,theQueue->_arraylength);
         //printf("upper bound %lf \n",original->_ub );
-
+	pthread_rwlock_rdlock(&lb->_lock);
 	if(original->_ub < lb->_lb){
+	  pthread_rwlock_unlock(&lb->_lock);
 	  break;
 	}
-
+	pthread_rwlock_unlock(&lb->_lock);
 	//else do stuff with left and right nodes
 	original->_left = (PQNode*)malloc(sizeof(PQNode));
 	original->_right = (PQNode*)malloc(sizeof(PQNode));
 	PQNode* left = original->_left;
 	PQNode* right = original->_right;
-        
-	
 	//right and left, set lower bound
+	pthread_rwlock_wrlock(&lb->_lock);
 	right->_lb = lb;
 	left->_lb = lb;
-	
-	
+	pthread_rwlock_unlock(&lb->_lock);
+
 	right->_index = (original->_index) - 1;
 	right->_cap = original->_cap;
 	right->_value = original->_value;
@@ -176,10 +166,12 @@ void pathtranverse(PQueue* theQueue, PQNode* original){
 	printf("at index %d, the right node is value %d, upperbound %lf, capacity %d\n",right->_index,right->_value,right->_ub,right->_cap);
 	printf("upperbound right is %lf\n",right->_ub);
 	*/
+	pthread_rwlock_rdlock(&lb->_lock);
         if(right->_ub > lb->_lb){
 	  //printf("put this into queue\n");
           enQueueWork(theQueue,right);
 	}	 
+	pthread_rwlock_unlock(&lb->_lock);
 	left->_index = (original->_index) - 1;
 	left->_cap =  original->_cap - itemArray[index]->_weight;
 	left->_value = itemArray[index]->_profit + original->_value;
@@ -199,26 +191,20 @@ void pathtranverse(PQueue* theQueue, PQNode* original){
           //printf("done with all items \n\n");
           break;
         }
-
-
+	pthread_rwlock_rdlock(&lb->_lock);
 	if(left->_ub < lb->_lb){
+	  pthread_rwlock_unlock(&lb->_lock);
 	  break;
 	}
+	pthread_rwlock_unlock(&lb->_lock);
 	free(original);
-	original = left;    
-
+	original = left;   
       }
-      if(original->_value >= lb->_lb){
+      pthread_rwlock_rdlock(&lb->_lock);
+      if(original->_value >= lb->_lb)
 	lb->_lb= original->_value;
-      }
-      //printf("Done with everything\n\n");
-      //  }
+      pthread_rwlock_unlock(&lb->_lock);
       return;
-  
-  //***********************************
-  //should bb be called again here so the same thread will go back for more work??????????????????????????????????????????????????
-  //**********************************
-
 }
 
 int main(int argc, char* argv[]) {
@@ -303,9 +289,8 @@ int main(int argc, char* argv[]) {
     printf("%lf \n", itemArray[i]->_ratio);
   }
   */
-  for (i = 0; i< len; i++) {
+  for (i = 0; i< len; i++)
     free(itemArray[i]);
-  }
   free(itemArray);
   free(lb);
   return 0;
