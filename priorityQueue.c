@@ -19,6 +19,12 @@ void destroyQueue(PQueue* q) {
     free(q->_n[i]);
     //pthread_rwlock_destroy(&q->_n[i]->_lock);
   }
+  for (i = 0; i < q->_arraylength; i++) {
+    free(q->_itArrayptr[i]);
+  }
+  free(q->_itArrayptr);
+  pthread_cond_destroy(&q->_cond);
+  pthread_mutex_destroy(&q->_lock);
   free(q->_n);
   free(q);
 }

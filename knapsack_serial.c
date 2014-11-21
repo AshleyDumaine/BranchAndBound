@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
-
 #include <time.h>
 
 LBound* lb; //lower bound global
@@ -296,7 +295,10 @@ int main(int argc, char* argv[]) {
     printf("%lf \n", itemArray[i]->_ratio);
   }
   */
-
+  destroyQueue(sharedQ);
+  pthread_mutex_destroy(&mtx);
+  pthread_rwlock_destroy(&lb->_lock);
+  free(lb);
   for (i = 0; i< len; i++)
     free(itemArray[i]);
   free(itemArray);
