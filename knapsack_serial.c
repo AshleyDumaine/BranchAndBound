@@ -126,8 +126,7 @@ while(1){
   }
   else{
     pathtranverse(theQueue, original);
-  } 
-  
+  }
   if(isEmpty(theQueue))
     continue;
  }
@@ -153,6 +152,7 @@ void pathtranverse(PQueue* theQueue, PQNode* original){
 	//else do stuff with left and right nodes
 	original->_left = (PQNode*)malloc(sizeof(PQNode));
 	original->_right = (PQNode*)malloc(sizeof(PQNode));
+	printf("malloc left and right\n");
 	PQNode* left = original->_left;
 	PQNode* right = original->_right;
 	//right and left, set lower bound
@@ -173,9 +173,13 @@ void pathtranverse(PQueue* theQueue, PQNode* original){
         if(right->_ub > lb->_lb){
 	  //printf("put this into queue\n");
           enQueueWork(theQueue,right);
+	  
 	}
 	else{
-	  free(right);
+	  if(right!=NULL){
+	    printf("freed node\n");
+	    free(right);
+	  }
 	} 
 	pthread_rwlock_unlock(&lb->_lock);
 	left->_index = (original->_index) - 1;
@@ -184,6 +188,7 @@ void pathtranverse(PQueue* theQueue, PQNode* original){
 	calculateUpperBound(itemArray, left, theQueue->_arraylength);
 	// printf("at index %d, the left node is value %d, upperbound %lf, capacity %d\n",left->_index,left->_value,left->_ub,left->_cap);
 	if(left->_cap < 0){
+	  printf("freed another node\n");
 	  free(left);
 	  //printf("Too much shit, we're done\n");
 	  break;
@@ -206,7 +211,9 @@ void pathtranverse(PQueue* theQueue, PQNode* original){
 	  break;
 	}
 	pthread_rwlock_unlock(&lb->_lock);
-	free(original);
+	printf("freed dis shit\n");
+	PQNode* temp = original;
+	free(temp);
 	original = left;   
       }
       pthread_rwlock_rdlock(&lb->_lock);
@@ -214,6 +221,7 @@ void pathtranverse(PQueue* theQueue, PQNode* original){
 	lb->_lb= original->_value;
       }
       pthread_rwlock_unlock(&lb->_lock);
+      printf("freed a node\n");
       free(original);
       return;
 }
@@ -249,7 +257,7 @@ int main(int argc, char* argv[]) {
   fscanf(fp,"%d",&capacity);
   qsort(itemArray, len, sizeof(Item*),compare); 
   //do stuff involving 1 thread currently
-
+  fclose(fp);
   //the main part of the assignment
   int nthreads = atoi(argv[2]);
 
@@ -313,7 +321,7 @@ int main(int argc, char* argv[]) {
     free(itemArray[i]);
   }
   free(itemArray);
-  
+ 
   return 0;
 }
 
