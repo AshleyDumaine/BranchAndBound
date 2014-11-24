@@ -15,7 +15,7 @@ int heap_compare(void *a, void *b) {
   double i = node1->_ub;
   double k = node2->_ub;
   
-  return k < i;
+  return k - i;
   //return (int)b < (int)a; 
 }                                                                              
 heap_t *heap_create(int size)
@@ -50,6 +50,7 @@ int heap_resize(heap_t *h, int size)
 int heap_insert(heap_t *h, void *item)
 {
   if (h->last == h->size){ 
+    //heap_resize(h,h->size*2);
     return -1;
     //return -ENOMEM;
   }
