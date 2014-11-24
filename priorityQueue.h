@@ -42,7 +42,7 @@ typedef struct priorityQueue {
   pthread_cond_t _cond;
 } PQueue;
 
-heap_t* makeQueue(int mxs);
+heap_t* makeQueue(long mxs);
 void  destroyQueue(heap_t* theQueue);
 void enQueue(heap_t* theQueue, PQNode* n);
 PQNode* deQueue(heap_t* theQueue);
