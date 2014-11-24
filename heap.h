@@ -12,8 +12,8 @@ typedef struct Item {
 
 
 typedef struct heap_t_ {
-  int last;
-  int size;
+  long last;
+  long size;
   void *data;
 
   int _isDone;
@@ -27,9 +27,9 @@ typedef struct heap_t_ {
 #endif
 
 
-heap_t *heap_create(int size);
+heap_t *heap_create(long size);
 void heap_free(heap_t *h);
-int heap_resize(heap_t *h, int size);
+int heap_resize(heap_t *h, long size);
 int heap_insert(heap_t *h, void *item);
 void *heap_remove_root(heap_t *h);
 

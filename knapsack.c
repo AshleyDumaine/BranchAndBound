@@ -176,11 +176,9 @@ void pathtranverse(heap_t* theQueue, PQNode* original){
         if(right->_ub > lb->_lb){
 	  //printf("put this into queue\n");
           enQueueWork(theQueue,right);
-	  
 	}
-	else{
+	else
 	    free(right);
-	}
 	pthread_rwlock_unlock(&lb->_lock);
 	left->_index = (original->_index) - 1;
 	left->_cap =  original->_cap - itemArray[index]->_weight;
@@ -259,6 +257,7 @@ int main(int argc, char* argv[]) {
   int nthreads = atoi(argv[2]);
 
   //The shared queue 
+  //printf("LENGTH: %ld\n\n\n\n", len);
   heap_t* sharedQ = makeQueue(len); //dynamically grows (it might not...)
   sharedQ->_isDone = 0;
   sharedQ->_itArrayptr = itemArray;
@@ -296,7 +295,7 @@ int main(int argc, char* argv[]) {
 
   for(i=0;i<nthreads;i++) {
     pthread_join(threads[i],&exitStatus);
-    printf("joined\n");
+    //printf("joined\n");
   }
   pthread_rwlock_rdlock(&lb->_lock);
   printf("lower bound is: %d \n",lb->_lb);

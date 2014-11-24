@@ -6,8 +6,11 @@
 #include "heap.h"
 
 //might not be dynamically growing, u might wanna use heap resize method
-heap_t* makeQueue(int mxs) {
+heap_t* makeQueue(long mxs) {
+  //printf("MXS: %ld\n\n\n", mxs);
   heap_t* h = heap_create(mxs);
+  pthread_mutex_init(&h->_lock,NULL);
+  pthread_cond_init(&h->_cond,NULL);
   return h;
   /*
   PQueue* q = (PQueue*)malloc(sizeof(PQueue));
@@ -37,14 +40,13 @@ void destroyQueue(heap_t* q) {
   pthread_cond_destroy(&q->_cond);
   pthread_mutex_destroy(&q->_lock);
   heap_free(q);
-
-
   //  free(q->_n);
   //  free(q);
 }
 int isEmpty(heap_t* theQueue)
 {
-  return theQueue->size == 0;
+  return theQueue->last < 0;
+  //return theQueue->size == 0;
 }
 
 void enQueue(heap_t* q,PQNode* node)

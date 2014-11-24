@@ -1,7 +1,8 @@
 #include "heap.h"
 #include <errno.h>
 #include <string.h>
-#include <stdlib.h>                                                            
+#include <stdlib.h>
+#include <stdio.h>                                                            
 
 #include "priorityQueue.h"
 // Macros for accessing left/right/parent indices for a heap node             
@@ -14,11 +15,10 @@ int heap_compare(void *a, void *b) {
   PQNode* node2 = (PQNode*)b;
   double i = node1->_ub;
   double k = node2->_ub;
-  
-  return k < i;
-  //return (int)b < (int)a; 
+  //printf("%f < %f = %d\n", k, i, i-k);
+  return i-k;
 }                                                                              
-heap_t *heap_create(int size)
+heap_t *heap_create(long size)
 {
   heap_t *h = calloc(1, sizeof(heap_t));
   if (h == NULL) return NULL;
@@ -35,11 +35,15 @@ void heap_free(heap_t *h)
   free(h);
 }
 
-int heap_resize(heap_t *h, int size)
+int heap_resize(heap_t *h, long size)
 {
-  if (size <= h->size) return -EINVAL;
+  printf("RESIZING HEAP\n");
+  if (size <= h->size) return -1;
   void **H = calloc(size, sizeof(void*));
-  if (H == NULL) return -ENOMEM;
+  if (H == NULL) {
+    printf("OUT OF MEMORY\n");
+    exit(-1);
+  }
   memcpy(H, h->data, h->size * sizeof(void*));
   free(h->data);
   h->size = size;
@@ -49,17 +53,17 @@ int heap_resize(heap_t *h, int size)
 
 int heap_insert(heap_t *h, void *item)
 {
-  if (h->last == h->size){ 
-    return -1;
-    //return -ENOMEM;
+  if (h->last == h->size) {
+    //printf("CALL RESIZE HERE from size %ld\n\n\n\n\n", h->size);
+    heap_resize(h, h->size * 2);
+    //printf("resized to %ld\n", h->size);
   }
-  if (item == NULL) {
+  if (item == NULL)
     return -1;
-    // return -EINVAL;
-  }
-  int i = ++h->last;
+  long i = ++h->last;
   void **H = h->data;
   H[i] = item;
+  //printf("GOT HERE\n");
   while (i > 0 && heap_compare(item, H[HEAP_PARENT(i)])) {
     H[i] = H[HEAP_PARENT(i)];
     H[HEAP_PARENT(i)] = item;
@@ -72,7 +76,7 @@ void *heap_remove_root(heap_t *h)
 {
   void **H = h->data;
   void *temp, *root = H[0];
-  int i = 0, left, right, child;
+  long i = 0, left, right, child;
   if (h->last < 0) return NULL;
   H[0] = H[h->last];
   H[h->last] = NULL;
