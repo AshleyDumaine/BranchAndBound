@@ -26,7 +26,7 @@ int compare (const void* a, const void* b) {
 PQNode* deQueueWork(heap_t* twq)
 {
   pthread_mutex_lock(&twq->_lock);
-  clock_t begin = clock();
+  //clock_t begin = clock();
   while (isEmpty(twq)) {
     if(twq->_isDone == 0) 
       pthread_cond_wait(&twq->_cond,&twq->_lock);
@@ -36,8 +36,8 @@ PQNode* deQueueWork(heap_t* twq)
     }
   }
   PQNode* n = deQueue(twq);
-  clock_t end = clock();
-  printf("time dequeue: %f \n", (double)(end-begin)/CLOCKS_PER_SEC);
+  //clock_t end = clock();
+  //printf("time dequeue: %f \n", (double)(end-begin)/CLOCKS_PER_SEC);
   pthread_mutex_unlock(&twq->_lock);
   return n;
 }
@@ -211,6 +211,9 @@ int main(int argc, char* argv[]) {
   fclose(fp);
   //the main part of the assignment
   int nthreads = atoi(argv[2]);
+  int status;
+  void* exitStatus;
+  pthread_t threads[nthreads];
   heap_t* sharedQ = makeQueue(len*10);
   sharedQ->_isDone = 0;
   sharedQ->_itArrayptr = itemArray;
@@ -229,8 +232,6 @@ int main(int argc, char* argv[]) {
   startnode->_index = len-1;
   enQueueWork(sharedQ, startnode);
   clock_t tic = clock();
-  int status;
-  pthread_t threads[nthreads];
   for(i=0;i<nthreads;i++){
     status = pthread_create(&threads[i],NULL,bb,(void*)sharedQ);
     if(status){
@@ -238,12 +239,11 @@ int main(int argc, char* argv[]) {
       exit(-1);
     }
   }
-  void* exitStatus;
   for(i=0;i<nthreads;i++)
     pthread_join(threads[i],&exitStatus);
-  pthread_rwlock_rdlock(&lb->_lock);
+  //pthread_rwlock_rdlock(&lb->_lock);
   printf("lower bound is: %d \n",lb->_lb);
-  pthread_rwlock_unlock(&lb->_lock);
+  //pthread_rwlock_unlock(&lb->_lock);
   clock_t toc = clock();
   printf("Elapsed: %f seconds \n", (double)(toc-tic)/CLOCKS_PER_SEC);
   destroyQueue(sharedQ);
