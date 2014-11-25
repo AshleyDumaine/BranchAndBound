@@ -26,6 +26,7 @@ int compare (const void* a, const void* b) {
 PQNode* deQueueWork(heap_t* twq)
 {
   pthread_mutex_lock(&twq->_lock);
+  clock_t begin = clock();
   while (isEmpty(twq)) {
     if(twq->_isDone == 0) 
       pthread_cond_wait(&twq->_cond,&twq->_lock);
@@ -35,6 +36,8 @@ PQNode* deQueueWork(heap_t* twq)
     }
   }
   PQNode* n = deQueue(twq);
+  clock_t end = clock();
+  printf("time dequeue: %f \n", (double)(end-begin)/CLOCKS_PER_SEC);
   pthread_mutex_unlock(&twq->_lock);
   return n;
 }
