@@ -23,8 +23,8 @@ heap_t *heap_create(long size)
   heap_t *h = calloc(1, sizeof(heap_t));
   if (h == NULL) return NULL;
   h->last = -1;
-  h->size = size;
-  h->data = calloc(size, sizeof(void*));
+  h->size = 4096;//size;
+  h->data = calloc(4096, sizeof(void*));
   if (h->data == NULL) return NULL;
   return h;
 }
@@ -55,8 +55,8 @@ int heap_insert(heap_t *h, void *item)
 {
   if (h->last == h->size){ 
     //heap_resize(h,h->size*2);
+    printf("NOT ENOUGH ROOM\n\n\n");
     return -1;
-    //return -ENOMEM;
   }
   if (item == NULL)
     return -1;
