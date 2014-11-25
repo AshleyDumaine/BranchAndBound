@@ -258,7 +258,7 @@ int main(int argc, char* argv[]) {
 
   //The shared queue 
   //printf("LENGTH: %ld\n\n\n\n", len);
-  heap_t* sharedQ = makeQueue(len); //dynamically grows (it might not...)
+  heap_t* sharedQ = makeQueue(len*10); //dynamically grows (it might not...)
   sharedQ->_isDone = 0;
   sharedQ->_itArrayptr = itemArray;
   sharedQ->_arraylength = len;

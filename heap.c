@@ -15,7 +15,8 @@ int heap_compare(void *a, void *b) {
   PQNode* node2 = (PQNode*)b;
   double i = node1->_ub;
   double k = node2->_ub;
-  return k - i;
+  // return k > i;
+   return k - i;
 
 }                                                                              
 heap_t *heap_create(long size)
@@ -23,8 +24,8 @@ heap_t *heap_create(long size)
   heap_t *h = calloc(1, sizeof(heap_t));
   if (h == NULL) return NULL;
   h->last = -1;
-  h->size = 4096;//size;
-  h->data = calloc(4096, sizeof(void*));
+  h->size = size; //4096;
+  h->data = calloc(size, sizeof(void*));
   if (h->data == NULL) return NULL;
   return h;
 }
