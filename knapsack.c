@@ -4,7 +4,6 @@
 #include <string.h>
 #include <pthread.h>
 #include <time.h>
-
 #include "heap.h"
 
 LBound* lb; //lower bound global
@@ -116,67 +115,68 @@ void* bb(void* SQueue) {
       continue;
   }
 }
+
 void pathtranverse(heap_t* theQueue, PQNode* original){
   Item** itemArray = theQueue->_itArrayptr;
-      while (original->_cap != 0 && original->_index != 0) {
-	int index = original->_index;
-        calculateUpperBound(itemArray,original,theQueue->_arraylength);
-	pthread_rwlock_rdlock(&lb->_lock);
-	if(original->_ub < lb->_lb){
-	  pthread_rwlock_unlock(&lb->_lock);
-	  break;
-	}
-	pthread_rwlock_unlock(&lb->_lock);
-	original->_left = (PQNode*)malloc(sizeof(PQNode));
-	original->_right = (PQNode*)malloc(sizeof(PQNode));
-	PQNode* left = original->_left;
-	PQNode* right = original->_right;
-	pthread_rwlock_wrlock(&lb->_lock);
-	right->_lb = lb;
-	left->_lb = lb;
-	pthread_rwlock_unlock(&lb->_lock);
-	right->_index = (original->_index) - 1;
-	right->_cap = original->_cap;
-	right->_value = original->_value;
-	calculateUpperBound(itemArray,right,theQueue->_arraylength);
-	pthread_rwlock_rdlock(&lb->_lock);
-        if(right->_ub > lb->_lb)
-          enQueueWork(theQueue,right);
-	else
-	    free(right);
-	pthread_rwlock_unlock(&lb->_lock);
-	left->_index = (original->_index) - 1;
-	left->_cap =  original->_cap - itemArray[index]->_weight;
-	left->_value = itemArray[index]->_profit + original->_value;
-	calculateUpperBound(itemArray, left, theQueue->_arraylength);
-	if(left->_cap < 0){
-	  free(left);
-	  break;
-	}
-        if(original->_cap < itemArray[index]->_weight){
-          pthread_rwlock_wrlock(&lb->_lock);
-          if(lb->_lb < original->_value)
-            lb->_lb = original->_value;
-          pthread_rwlock_unlock(&(lb->_lock));
-          break;
-        }
-	pthread_rwlock_rdlock(&lb->_lock);
-	if(left->_ub < lb->_lb){
-	  free(left);
-	  pthread_rwlock_unlock(&lb->_lock);
-	  break;
-	}
-	pthread_rwlock_unlock(&lb->_lock);
-	PQNode* temp = original;
-	free(temp);
-	original = left;   
-      }
-      pthread_rwlock_rdlock(&lb->_lock);
-      if(original->_value >= lb->_lb)
-	lb->_lb= original->_value;
+  while (original->_cap != 0 && original->_index != 0) {
+    int index = original->_index;
+    calculateUpperBound(itemArray,original,theQueue->_arraylength);
+    pthread_rwlock_rdlock(&lb->_lock);
+    if(original->_ub < lb->_lb){
       pthread_rwlock_unlock(&lb->_lock);
-      free(original);
-      return;
+      break;
+    }
+    pthread_rwlock_unlock(&lb->_lock);
+    original->_left = (PQNode*)malloc(sizeof(PQNode));
+    original->_right = (PQNode*)malloc(sizeof(PQNode));
+    PQNode* left = original->_left;
+    PQNode* right = original->_right;
+    pthread_rwlock_wrlock(&lb->_lock);
+    right->_lb = lb;
+    left->_lb = lb;
+    pthread_rwlock_unlock(&lb->_lock);
+    right->_index = (original->_index) - 1;
+    right->_cap = original->_cap;
+    right->_value = original->_value;
+    calculateUpperBound(itemArray,right,theQueue->_arraylength);
+    pthread_rwlock_rdlock(&lb->_lock);
+    if(right->_ub > lb->_lb)
+      enQueueWork(theQueue,right);
+    else
+      free(right);
+    pthread_rwlock_unlock(&lb->_lock);
+    left->_index = (original->_index) - 1;
+    left->_cap =  original->_cap - itemArray[index]->_weight;
+    left->_value = itemArray[index]->_profit + original->_value;
+    calculateUpperBound(itemArray, left, theQueue->_arraylength);
+    if(left->_cap < 0){
+      free(left);
+      break;
+    }
+    if(original->_cap < itemArray[index]->_weight){
+      pthread_rwlock_wrlock(&lb->_lock);
+      if(lb->_lb < original->_value)
+	lb->_lb = original->_value;
+      pthread_rwlock_unlock(&(lb->_lock));
+      break;
+    }
+    pthread_rwlock_rdlock(&lb->_lock);
+    if(left->_ub < lb->_lb){
+      free(left);
+      pthread_rwlock_unlock(&lb->_lock);
+	  break;
+    }
+    pthread_rwlock_unlock(&lb->_lock);
+    PQNode* temp = original;
+    free(temp);
+    original = left;   
+  }
+  pthread_rwlock_rdlock(&lb->_lock);
+  if(original->_value >= lb->_lb)
+    lb->_lb= original->_value;
+  pthread_rwlock_unlock(&lb->_lock);
+  free(original);
+  return;
 }
 
 int main(int argc, char* argv[]) {
@@ -252,4 +252,3 @@ int main(int argc, char* argv[]) {
   free(itemArray);
   return 0;
 }
-

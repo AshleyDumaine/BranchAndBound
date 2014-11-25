@@ -2,9 +2,9 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h>                                                            
-
+#include <stdio.h>
 #include "priorityQueue.h"
+
 // Macros for accessing left/right/parent indices for a heap node             
 #define HEAP_LEFT(i) (2*i+1)
 #define HEAP_RIGHT(i) (2*i+2)
@@ -95,5 +95,3 @@ void *heap_remove_root(heap_t *h)
   }
   return root;
 }
-
-

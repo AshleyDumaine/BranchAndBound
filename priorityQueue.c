@@ -2,12 +2,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
-
 #include "heap.h"
 
 //might not be dynamically growing, u might wanna use heap resize method
 heap_t* makeQueue(long mxs) {
-  //printf("MXS: %ld\n\n\n", mxs);
   heap_t* h = heap_create(mxs);
   pthread_mutex_init(&h->_lock,NULL);
   pthread_cond_init(&h->_cond,NULL);
