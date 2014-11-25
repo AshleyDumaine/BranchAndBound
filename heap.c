@@ -15,8 +15,7 @@ int heap_compare(void *a, void *b) {
   PQNode* node2 = (PQNode*)b;
   double i = node1->_ub;
   double k = node2->_ub;
-  // return k > i;
-   return k - i;
+  return k - i;
 
 }                                                                              
 heap_t *heap_create(long size)
@@ -24,7 +23,7 @@ heap_t *heap_create(long size)
   heap_t *h = calloc(1, sizeof(heap_t));
   if (h == NULL) return NULL;
   h->last = -1;
-  h->size = size; //4096;
+  h->size = size;
   h->data = calloc(size, sizeof(void*));
   if (h->data == NULL) return NULL;
   return h;
@@ -56,7 +55,6 @@ int heap_insert(heap_t *h, void *item)
 {
   if (h->last == h->size){ 
     //heap_resize(h,h->size*2);
-    printf("NOT ENOUGH ROOM\n\n\n");
     return -1;
   }
   if (item == NULL)
