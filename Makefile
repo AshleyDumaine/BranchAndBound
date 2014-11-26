@@ -1,20 +1,20 @@
-SRCS=knapsack_serial.c knapsack.c priorityQueue.c heap.c
+SRCS=knapsack.c knapsack_serial.c priorityQueue.c heap.c
 
-OFILES=knapsack_serial.c knapsack.c priorityQueue.c heap.c
-
-CC=cc
+OFILES=knapsack.c priorityQueue.c heap.c
+OFILES2=knapsack_serial.c priorityQueue.c heap.c
 LD=cc
+CC=cc
 
 CFLAGS=-c -g -pthread
 LFLAGS=-g -pthread
 
-all: knapsack_serial knapsack
+all: knapsack knapsack_serial
 	@echo "Done compiling!"
 
-knapsack_serial: $(OFILES)	
-	$(CC) $(LFLAGS) $(OFILES) -o $@
+knapsack_serial: knapsack_serial.o	
+	$(CC) $(LFLAGS) $(OFILES2) -o $@
 
-knapsack: $(OFILES)	
+knapsack: knapsack.o	
 	$(CC) $(LFLAGS) $(OFILES) -o $@
 
 priorityQueue.o : priorityQueue.c
