@@ -78,7 +78,8 @@ void calculateUpperBound(Item** itemArray,PQNode* node, int len) {
 void* bb(void* SQueue) {
   heap_t* theQueue = (heap_t*)SQueue;
   while(1){
-    pthread_mutex_lock(&(theQueue->_lock));
+   
+    pthread_mutex_lock(&theQueue->_lock); //lock
     if (isEmpty(theQueue) && theQueue->_awakeThreads == 1)
       {
 	pthread_cond_broadcast(&(theQueue->_cond));
@@ -86,30 +87,33 @@ void* bb(void* SQueue) {
       }
     else
       theQueue->_awakeThreads--;
-    pthread_mutex_unlock(&(theQueue->_lock));
+    pthread_mutex_unlock(&theQueue->_lock); //unlock
+    
     PQNode* original = deQueueWork(theQueue);
     if (original==NULL)
       return;
-    pthread_mutex_lock(&(theQueue->_lock));
+    
+    pthread_mutex_lock(&theQueue->_lock); //lock
     theQueue->_awakeThreads++;
-    pthread_mutex_unlock(&(theQueue->_lock));
+    pthread_mutex_unlock(&theQueue->_lock); //unlock
     Item** itemArray = theQueue->_itArrayptr;    
     if(original->_index == 0){
       if(original->_cap >= itemArray[0]->_weight)
 	original->_value = itemArray[0]->_profit + original->_value;
-      pthread_rwlock_wrlock(&(lb->_lock));
-      if(original->_value > lb->_lb)
-	lb->_lb = original->_value;
-      free(original);
-      pthread_rwlock_unlock(&(lb->_lock));
+      pthread_rwlock_wrlock(&(lb->_lock)); //lock
+      if(original->_value > lb->_lb) //read
+	lb->_lb = original->_value; //write
+      //free(original); //<--- move?
+      pthread_rwlock_unlock(&(lb->_lock)); //unlock
+      free(original); //<--- move?
     }
-    
-    else if(original->_cap == 0){
-      pthread_rwlock_wrlock(&lb->_lock);
-      if(original->_value > lb->_lb)
-	lb->_lb= original->_value;
-      free(original);
-      pthread_rwlock_unlock(&lb->_lock);
+    else if(original->_cap == 0){      
+      pthread_rwlock_wrlock(&lb->_lock); //lock
+      if(original->_value > lb->_lb) //read
+	lb->_lb= original->_value; //write
+      //free(original); //<--- move?
+      pthread_rwlock_unlock(&lb->_lock); //unlock
+      free(original); //<--- move?
     }
     else{
       pathtranverse(theQueue, original);
@@ -124,30 +128,39 @@ void pathtranverse(heap_t* theQueue, PQNode* original){
   while (original->_cap != 0 && original->_index != 0) {
     int index = original->_index;
     calculateUpperBound(itemArray,original,theQueue->_arraylength);
+    
     pthread_rwlock_rdlock(&lb->_lock);
     if(original->_ub < lb->_lb){
       pthread_rwlock_unlock(&lb->_lock);
       break;
     }
     pthread_rwlock_unlock(&lb->_lock);
+    
     original->_left = (PQNode*)malloc(sizeof(PQNode));
     original->_right = (PQNode*)malloc(sizeof(PQNode));
     PQNode* left = original->_left;
     PQNode* right = original->_right;
+    
     pthread_rwlock_wrlock(&lb->_lock);
     right->_lb = lb;
     left->_lb = lb;
     pthread_rwlock_unlock(&lb->_lock);
+    
     right->_index = (original->_index) - 1;
     right->_cap = original->_cap;
     right->_value = original->_value;
     calculateUpperBound(itemArray,right,theQueue->_arraylength);
+    
     pthread_rwlock_rdlock(&lb->_lock);
-    if(right->_ub > lb->_lb)
+    if(right->_ub > lb->_lb){
+      pthread_rwlock_unlock(&lb->_lock);
       enQueueWork(theQueue,right);
-    else
+    }    
+    else {
+      pthread_rwlock_unlock(&lb->_lock);
       free(right);
-    pthread_rwlock_unlock(&lb->_lock);
+    }
+    
     left->_index = (original->_index) - 1;
     left->_cap =  original->_cap - itemArray[index]->_weight;
     left->_value = itemArray[index]->_profit + original->_value;
@@ -157,26 +170,30 @@ void pathtranverse(heap_t* theQueue, PQNode* original){
       break;
     }
     if(original->_cap < itemArray[index]->_weight){
-      pthread_rwlock_wrlock(&lb->_lock);
-      if(lb->_lb < original->_value)
-	lb->_lb = original->_value;
-      pthread_rwlock_unlock(&(lb->_lock));
+      
+      pthread_rwlock_wrlock(&lb->_lock); //<--- we're reading and writing...
+      if(lb->_lb < original->_value) //read
+	lb->_lb = original->_value; //write
+      pthread_rwlock_unlock(&lb->_lock);
+      
       break;
     }
+    
     pthread_rwlock_rdlock(&lb->_lock);
     if(left->_ub < lb->_lb){
-      free(left);
       pthread_rwlock_unlock(&lb->_lock);
-	  break;
+      free(left);
+      break;
     }
     pthread_rwlock_unlock(&lb->_lock);
+    
     PQNode* temp = original;
     free(temp);
     original = left;   
   }
-  pthread_rwlock_rdlock(&lb->_lock);
-  if(original->_value >= lb->_lb)
-    lb->_lb= original->_value;
+  pthread_rwlock_rdlock(&lb->_lock); //<--- we're reading and writing...
+  if(original->_value >= lb->_lb) //read
+    lb->_lb= original->_value; //write
   pthread_rwlock_unlock(&lb->_lock);
   free(original);
   return;
@@ -220,9 +237,9 @@ int main(int argc, char* argv[]) {
   sharedQ->_arraylength = len;
   PQNode* startnode = (PQNode*)malloc(sizeof(PQNode));
   pthread_mutex_init(&mtx, NULL);
-  pthread_mutex_lock(&sharedQ->_lock);
+  //pthread_mutex_lock(&sharedQ->_lock); //there are no threads right now, not necessary
   sharedQ->_awakeThreads = nthreads;
-  pthread_mutex_unlock(&sharedQ->_lock);
+  //pthread_mutex_unlock(&sharedQ->_lock);
   lb  = (LBound*)malloc(sizeof(LBound));
   pthread_rwlock_init(&lb->_lock, NULL);
   lb->_lb = 0;
@@ -241,9 +258,7 @@ int main(int argc, char* argv[]) {
   }
   for(i=0;i<nthreads;i++)
     pthread_join(threads[i],&exitStatus);
-  //pthread_rwlock_rdlock(&lb->_lock);
   printf("lower bound is: %d \n",lb->_lb);
-  //pthread_rwlock_unlock(&lb->_lock);
   clock_t toc = clock();
   printf("Elapsed: %f seconds \n", (double)(toc-tic)/CLOCKS_PER_SEC);
   destroyQueue(sharedQ);
