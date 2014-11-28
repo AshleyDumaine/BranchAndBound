@@ -24,7 +24,7 @@ typedef struct PQNode {
 } PQNode;
 
 typedef struct LBound {
-  pthread_rwlock_t _lock;
+  pthread_mutex_t _lock;
   int _lb;
 } LBound;
 
