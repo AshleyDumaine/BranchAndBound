@@ -84,7 +84,7 @@ void* bb(void* SQueue) {
     else
       theQueue->_awakeThreads--;
     pthread_mutex_unlock(&theQueue->_lock); //unlock
-    printf("awake threads % d \n",theQueue->_awakeThreads);
+    //printf("awake threads % d \n",theQueue->_awakeThreads);
     PQNode* original = deQueueWork(theQueue);
     if (original==NULL)
       return;
@@ -202,10 +202,10 @@ int main(int argc, char* argv[]) {
   char* filename = argv[1];
   FILE* fp; 
   fp = fopen(filename, "r");
-  int len, i, capacity;
+  long len, i, capacity;
   fscanf(fp,"%d",&len);
   //number is useless, we just need it as a parameter for scanning
-  int number,weight,profit;
+  long number,weight,profit;
   Item** itemArray = (Item**)malloc(sizeof(Item*)*len);
   for (i = 0; i < len; i++) {
     Item* n = (Item*)malloc(sizeof(Item));

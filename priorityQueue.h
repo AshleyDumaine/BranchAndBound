@@ -12,8 +12,8 @@ typedef struct Item {
 */
 
 typedef struct PQNode {
-  int _value;
-  int _cap;
+  long _value;
+  long _cap;
   int _leftDone;
   int _rightDone;
   double _ub;
@@ -25,7 +25,7 @@ typedef struct PQNode {
 
 typedef struct LBound {
   pthread_spinlock_t _lock;
-  int _lb;
+  long _lb;
 } LBound;
 
 typedef struct priorityQueue {
