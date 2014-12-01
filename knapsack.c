@@ -74,22 +74,18 @@ void calculateUpperBound(Item** itemArray,PQNode* node, int len) {
 
 void* bb(void* SQueue) {
   heap_t* theQueue = (heap_t*)SQueue;
-  while(1){
-   
+  while(1){   
     pthread_mutex_lock(&theQueue->_lock); //lock
-    if (isEmpty(theQueue) && theQueue->_awakeThreads == 1)
-      {
-	pthread_cond_broadcast(&(theQueue->_cond));
-	theQueue->_isDone = 1;
-      }
+    if (isEmpty(theQueue) && theQueue->_awakeThreads == 1){
+      pthread_cond_broadcast(&(theQueue->_cond));
+      theQueue->_isDone = 1;
+    }
     else
       theQueue->_awakeThreads--;
     pthread_mutex_unlock(&theQueue->_lock); //unlock
-    
     PQNode* original = deQueueWork(theQueue);
     if (original==NULL)
       return;
-    
     pthread_mutex_lock(&theQueue->_lock); //lock
     theQueue->_awakeThreads++;
     pthread_mutex_unlock(&theQueue->_lock); //unlock
@@ -98,17 +94,17 @@ void* bb(void* SQueue) {
       if(original->_cap >= itemArray[0]->_weight)
 	original->_value = itemArray[0]->_profit + original->_value;
       if(original->_value > lb->_lb){
-	pthread_mutex_lock(&lb->_lock); //lock
+	pthread_spin_lock(&lb->_lock); //lock
 	lb->_lb = original->_value; //write
-	pthread_mutex_unlock(&lb->_lock); //unlock
+	pthread_spin_unlock(&lb->_lock); //unlock
       }
       free(original);
     }
     else if(original->_cap == 0){      
       if(original->_value > lb->_lb){
-	pthread_mutex_lock(&lb->_lock); //lock
+	pthread_spin_lock(&lb->_lock); //lock
 	lb->_lb= original->_value; //write
-	pthread_mutex_unlock(&lb->_lock); //unlock
+	pthread_spin_unlock(&lb->_lock); //unlock
       }
       free(original);
     }
@@ -153,9 +149,9 @@ void pathtranverse(heap_t* theQueue, PQNode* original){
     }
     if(original->_cap < itemArray[index]->_weight){
       if(lb->_lb < original->_value){
-	pthread_mutex_lock(&lb->_lock); //lock
+	pthread_spin_lock(&lb->_lock); //lock
 	lb->_lb = original->_value; //write
-	pthread_mutex_unlock(&lb->_lock); //unlock
+	pthread_spin_unlock(&lb->_lock); //unlock
       }
       break;
     }
@@ -168,16 +164,15 @@ void pathtranverse(heap_t* theQueue, PQNode* original){
     original = left;   
   }
   if(original->_value >= lb->_lb){
-    pthread_mutex_lock(&lb->_lock); //lock
+    pthread_spin_lock(&lb->_lock); //lock
     lb->_lb= original->_value; //write
-    pthread_mutex_unlock(&lb->_lock); //unlock
+    pthread_spin_unlock(&lb->_lock); //unlock
   }
   free(original);
   return;
 }
 
 int main(int argc, char* argv[]) {
-
   if(argc != 3) {
     fprintf(stderr, "usage: knapsack_serial filename thread count\n");
     return 1;
@@ -216,7 +211,7 @@ int main(int argc, char* argv[]) {
   pthread_mutex_init(&mtx, NULL);
   sharedQ->_awakeThreads = nthreads;
   lb  = (LBound*)malloc(sizeof(LBound));
-  pthread_mutex_init(&lb->_lock, NULL);
+  pthread_spin_init(&lb->_lock, NULL);
   lb->_lb = 0;
   startnode->_lb  = lb;
   startnode->_value = 0;
@@ -238,7 +233,7 @@ int main(int argc, char* argv[]) {
   printf("Elapsed: %f seconds \n", (double)(toc-tic)/CLOCKS_PER_SEC);
   destroyQueue(sharedQ);
   pthread_mutex_destroy(&mtx);
-  pthread_mutex_destroy(&lb->_lock);
+  pthread_spin_destroy(&lb->_lock);
   free(lb);
   for (i = 0; i< len; i++)
     free(itemArray[i]);
