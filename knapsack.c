@@ -84,7 +84,7 @@ void* bb(void* SQueue) {
     else
       theQueue->_awakeThreads--;
     pthread_mutex_unlock(&theQueue->_lock); //unlock
-    //printf("awake threads % d \n",theQueue->_awakeThreads);
+    printf("awake threads % d \n",theQueue->_awakeThreads);
     PQNode* original = deQueueWork(theQueue);
     if (original==NULL)
       return;
@@ -122,8 +122,7 @@ void* bb(void* SQueue) {
 
 void pathtranverse(heap_t* theQueue, PQNode* original_x){
   Item** itemArray = theQueue->_itArrayptr;
-     
-  //long l = theQueue->size % 100;
+
   heap_t* myQueue = makeQueue(theQueue->size);
   int bool = 0;
   enQueue(myQueue,original_x);
@@ -189,13 +188,6 @@ void pathtranverse(heap_t* theQueue, PQNode* original_x){
     lb->_lb= original->_value; //write
     pthread_spin_unlock(&lb->_lock); //unlock
   }
-  /*  
-  while(!isEmpty(myQueue)){
-    PQNode* n = deQueue(myQueue);
-    enQueueWork(theQueue,n);
-    }
-  destroyQueue(myQueue);
-  */
   free(original);
   }
   destroyQueue(myQueue);
