@@ -9,6 +9,9 @@ heap_t* makeQueue(long mxs) {
   heap_t* h = heap_create(mxs);
   pthread_mutex_init(&h->_lock,NULL);
   pthread_cond_init(&h->_cond,NULL);
+
+  //  pthread_spin_init(&h->_spin,NULL);
+
   return h;
   /*
   PQueue* q = (PQueue*)malloc(sizeof(PQueue));

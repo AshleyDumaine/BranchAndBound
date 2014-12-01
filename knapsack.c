@@ -75,6 +75,7 @@ void calculateUpperBound(Item** itemArray,PQNode* node, int len) {
 void* bb(void* SQueue) {
   heap_t* theQueue = (heap_t*)SQueue;
   while(1){   
+    
     pthread_mutex_lock(&theQueue->_lock); //lock
     if (isEmpty(theQueue) && theQueue->_awakeThreads == 1){
       pthread_cond_broadcast(&(theQueue->_cond));
@@ -83,9 +84,11 @@ void* bb(void* SQueue) {
     else
       theQueue->_awakeThreads--;
     pthread_mutex_unlock(&theQueue->_lock); //unlock
+    //printf("awake threads % d \n",theQueue->_awakeThreads);
     PQNode* original = deQueueWork(theQueue);
     if (original==NULL)
       return;
+
     pthread_mutex_lock(&theQueue->_lock); //lock
     theQueue->_awakeThreads++;
     pthread_mutex_unlock(&theQueue->_lock); //unlock
@@ -109,6 +112,7 @@ void* bb(void* SQueue) {
       free(original);
     }
     else{
+
       pathtranverse(theQueue, original);
     }
     if(isEmpty(theQueue))
@@ -116,8 +120,15 @@ void* bb(void* SQueue) {
   }
 }
 
-void pathtranverse(heap_t* theQueue, PQNode* original){
+void pathtranverse(heap_t* theQueue, PQNode* original_x){
   Item** itemArray = theQueue->_itArrayptr;
+     
+  //long l = theQueue->size % 100;
+  heap_t* myQueue = makeQueue(theQueue->size);
+  int bool = 0;
+  enQueue(myQueue,original_x);
+  while(!isEmpty(myQueue)){
+    PQNode* original = deQueue(myQueue);
   while (original->_cap != 0 && original->_index != 0) {
     int index = original->_index;
     calculateUpperBound(itemArray,original,theQueue->_arraylength);
@@ -135,8 +146,18 @@ void pathtranverse(heap_t* theQueue, PQNode* original){
     right->_cap = original->_cap;
     right->_value = original->_value;
     calculateUpperBound(itemArray,right,theQueue->_arraylength);
-    if(right->_ub > lb->_lb)
+    if(right->_ub > lb->_lb){
+      //enQueueWork(theQueue,right);
+      if(bool==0){
       enQueueWork(theQueue,right);
+      bool = 1;
+      }
+      else{
+	enQueue(myQueue,right);
+	//bool = 0;
+      }
+      
+    }
     else
       free(right);
     left->_index = (original->_index) - 1;
@@ -168,7 +189,16 @@ void pathtranverse(heap_t* theQueue, PQNode* original){
     lb->_lb= original->_value; //write
     pthread_spin_unlock(&lb->_lock); //unlock
   }
+  /*  
+  while(!isEmpty(myQueue)){
+    PQNode* n = deQueue(myQueue);
+    enQueueWork(theQueue,n);
+    }
+  destroyQueue(myQueue);
+  */
   free(original);
+  }
+  destroyQueue(myQueue);
   return;
 }
 
@@ -211,7 +241,7 @@ int main(int argc, char* argv[]) {
   pthread_mutex_init(&mtx, NULL);
   sharedQ->_awakeThreads = nthreads;
   lb  = (LBound*)malloc(sizeof(LBound));
-  pthread_spin_init(&lb->_lock, NULL);
+  pthread_spin_init(&lb->_lock, 0);
   lb->_lb = 0;
   startnode->_lb  = lb;
   startnode->_value = 0;

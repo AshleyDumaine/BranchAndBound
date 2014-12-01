@@ -21,6 +21,8 @@ typedef struct heap_t_ {
   Item** _itArrayptr;
   int _arraylength;
   pthread_mutex_t _lock;
+
+  //  pthread_spinlock_t _spin;
   pthread_cond_t _cond;
 
 } heap_t;
