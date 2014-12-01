@@ -5,15 +5,15 @@
 
 typedef struct Item {
   double _ratio;
-  long _weight;
-  long _profit;
+  int _weight;
+  int _profit;
 } Item;
 
 
 
 typedef struct heap_t_ {
-  long last;
-  long size;
+  int last;
+  int size;
   void *data;
 
   int _isDone;
@@ -29,9 +29,9 @@ typedef struct heap_t_ {
 #endif
 
 
-heap_t *heap_create(long size);
+heap_t *heap_create(int size);
 void heap_free(heap_t *h);
-int heap_resize(heap_t *h, long size);
+int heap_resize(heap_t *h, int size);
 int heap_insert(heap_t *h, void *item);
 void *heap_remove_root(heap_t *h);
 
