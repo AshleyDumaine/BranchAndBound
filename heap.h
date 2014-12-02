@@ -5,8 +5,8 @@
 
 typedef struct Item {
   double _ratio;
-  unsigned long _weight;
-  unsigned long _profit;
+  long _weight;
+  long _profit;
 } Item;
 
 
@@ -19,7 +19,7 @@ typedef struct heap_t_ {
   int _isDone;
   int _awakeThreads;
   Item** _itArrayptr;
-  unsigned long _arraylength;
+  long _arraylength;
   pthread_mutex_t _lock;
 
   //  pthread_spinlock_t _spin;
@@ -29,9 +29,9 @@ typedef struct heap_t_ {
 #endif
 
 
-heap_t *heap_create(unsigned long size);
+heap_t *heap_create(long size);
 void heap_free(heap_t *h);
-int heap_resize(heap_t *h, unsigned long size);
+int heap_resize(heap_t *h, long size);
 int heap_insert(heap_t *h, void *item);
 void *heap_remove_root(heap_t *h);
 

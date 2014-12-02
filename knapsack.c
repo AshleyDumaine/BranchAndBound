@@ -75,7 +75,6 @@ void calculateUpperBound(Item** itemArray,PQNode* node, unsigned long len) {
 void* bb(void* SQueue) {
   heap_t* theQueue = (heap_t*)SQueue;
   while(1){   
-    
     pthread_mutex_lock(&theQueue->_lock); //lock
     if (isEmpty(theQueue) && theQueue->_awakeThreads == 1){
       pthread_cond_broadcast(&(theQueue->_cond));
@@ -88,7 +87,6 @@ void* bb(void* SQueue) {
     PQNode* original = deQueueWork(theQueue);
     if (original==NULL)
       return;
-
     pthread_mutex_lock(&theQueue->_lock); //lock
     theQueue->_awakeThreads++;
     pthread_mutex_unlock(&theQueue->_lock); //unlock
@@ -112,7 +110,6 @@ void* bb(void* SQueue) {
       free(original);
     }
     else{
-
       pathtranverse(theQueue, original);
     }
     if(isEmpty(theQueue))
@@ -122,14 +119,13 @@ void* bb(void* SQueue) {
 
 void pathtranverse(heap_t* theQueue, PQNode* original_x){
   Item** itemArray = theQueue->_itArrayptr;
-
   heap_t* myQueue = makeQueue(theQueue->size);
   //int bool = 0;
   enQueue(myQueue,original_x);
   while(!isEmpty(myQueue)){
     PQNode* original = deQueue(myQueue);
   while (original->_cap != 0 && original->_index != 0) {
-    unsigned long index = original->_index;
+    long index = original->_index;
     calculateUpperBound(itemArray,original,theQueue->_arraylength);
     if(original->_ub < lb->_lb)
       break;
@@ -202,10 +198,10 @@ int main(int argc, char* argv[]) {
   char* filename = argv[1];
   FILE* fp; 
   fp = fopen(filename, "r");
-  unsigned long len, i, capacity;
+  long len, i, capacity;
   fscanf(fp,"%lu",&len);
   //number is useless, we just need it as a parameter for scanning
-  unsigned long number,weight,profit;
+  long number,weight,profit;
   Item** itemArray = (Item**)malloc(sizeof(Item*)*len);
   for (i = 0; i < len; i++) {
     Item* n = (Item*)malloc(sizeof(Item));

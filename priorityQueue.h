@@ -12,32 +12,32 @@ typedef struct Item {
 */
 
 typedef struct PQNode {
-  unsigned long _value;
-  unsigned long _cap;
+  long _value;
+  long _cap;
   int _leftDone;
   int _rightDone;
   double _ub;
   struct LBound* _lb;
-  unsigned long _index;
+  long _index;
   struct PQNode* _left;
   struct PQNode* _right;
 } PQNode;
 
 typedef struct LBound {
   pthread_spinlock_t _lock;
-  unsigned long _lb;
+  long _lb;
 } LBound;
 
 typedef struct priorityQueue {
-  unsigned long _mxs;
+  long _mxs;
   int _head;
-  unsigned long _tail;
-  unsigned long _sz;
+  long _tail;
+  long _sz;
   int _isDone;
   int _awakeThreads;
   PQNode** _n;
   Item** _itArrayptr;
-  unsigned long _arraylength;
+  long _arraylength;
   pthread_mutex_t _lock;
   pthread_cond_t _cond;
 } PQueue;

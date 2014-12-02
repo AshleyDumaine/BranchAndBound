@@ -18,7 +18,7 @@ int heap_compare(void *a, void *b) {
   return k - i;
 
 }                                                                              
-heap_t *heap_create(unsigned long size)
+heap_t *heap_create(long size)
 {
   heap_t *h = calloc(1, sizeof(heap_t));
   if (h == NULL) return NULL;
@@ -35,7 +35,7 @@ void heap_free(heap_t *h)
   free(h);
 }
 
-int heap_resize(heap_t *h, unsigned long size)
+int heap_resize(heap_t *h, long size)
 {
   printf("RESIZING HEAP\n");
   if (size <= h->size) return -1;
