@@ -48,11 +48,11 @@ void enQueueWork(heap_t* twq,PQNode* t)
 }
 
 void calculateUpperBound(Item** itemArray,PQNode* node, unsigned long len) {
-  unsigned long i, cap = node->_cap, index = node->_index;
+  long i, cap = node->_cap, index = node->_index;
   double value = (double)node->_value;
   for (i = index; i >= 0; i--) {
     Item* item = itemArray[i];
-    int diff = cap - item->_weight;
+    long diff = cap - item->_weight;
     if(diff > 0){
       cap = diff;
       value = value + item->_profit;
