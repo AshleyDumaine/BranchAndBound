@@ -47,8 +47,8 @@ void enQueueWork(heap_t* twq,PQNode* t)
   pthread_mutex_unlock(&twq->_lock);
 }
 
-void calculateUpperBound(Item** itemArray,PQNode* node, int len) {
-  int i, cap = node->_cap, index = node->_index;
+void calculateUpperBound(Item** itemArray,PQNode* node, unsigned long len) {
+  unsigned long i, cap = node->_cap, index = node->_index;
   double value = (double)node->_value;
   for (i = index; i >= 0; i--) {
     Item* item = itemArray[i];
@@ -129,7 +129,7 @@ void pathtranverse(heap_t* theQueue, PQNode* original_x){
   while(!isEmpty(myQueue)){
     PQNode* original = deQueue(myQueue);
   while (original->_cap != 0 && original->_index != 0) {
-    int index = original->_index;
+    unsigned long index = original->_index;
     calculateUpperBound(itemArray,original,theQueue->_arraylength);
     if(original->_ub < lb->_lb)
       break;
@@ -202,14 +202,14 @@ int main(int argc, char* argv[]) {
   char* filename = argv[1];
   FILE* fp; 
   fp = fopen(filename, "r");
-  int len, i, capacity;
-  fscanf(fp,"%d",&len);
+  unsigned long len, i, capacity;
+  fscanf(fp,"%lu",&len);
   //number is useless, we just need it as a parameter for scanning
-  int number,weight,profit;
+  unsigned long number,weight,profit;
   Item** itemArray = (Item**)malloc(sizeof(Item*)*len);
   for (i = 0; i < len; i++) {
     Item* n = (Item*)malloc(sizeof(Item));
-    fscanf(fp,"%d %d %d", &number, &profit, &weight);
+    fscanf(fp,"%lu %lu %lu", &number, &profit, &weight);
     double ratio = (double)profit/(double)weight;
     n->_weight = weight;
     n->_profit = profit;
@@ -217,7 +217,7 @@ int main(int argc, char* argv[]) {
     itemArray[i] = n;
   }
   //get max capacity
-  fscanf(fp,"%d",&capacity);
+  fscanf(fp,"%lu",&capacity);
   qsort(itemArray, len, sizeof(Item*),compare); 
   fclose(fp);
   //the main part of the assignment
@@ -250,7 +250,7 @@ int main(int argc, char* argv[]) {
   }
   for(i=0;i<nthreads;i++)
     pthread_join(threads[i],&exitStatus);
-  printf("lower bound is: %d \n",lb->_lb);
+  printf("lower bound is: %lu \n",lb->_lb);
   clock_t toc = clock();
   printf("Elapsed: %f seconds \n", (double)(toc-tic)/CLOCKS_PER_SEC);
   destroyQueue(sharedQ);
