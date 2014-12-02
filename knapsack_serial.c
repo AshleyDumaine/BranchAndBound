@@ -7,7 +7,7 @@
 #include "heap.h"
 
 LBound* lb; //lower bound global
-pthread_mutex_t mtx;
+//pthread_mutex_t mtx;
 PQNode* deQueueWork(heap_t* twq);
 void enQueueWork(heap_t* twq,PQNode* t);
 void pathtranverse(heap_t* theQueue, PQNode* original);
@@ -32,12 +32,12 @@ void enQueueWork(heap_t* twq,PQNode* t)
   enQueue(twq,t);
 }
 
-void calculateUpperBound(Item** itemArray,PQNode* node, int len) {
-  int i, cap = node->_cap, index = node->_index;
+void calculateUpperBound(Item** itemArray,PQNode* node, unsigned long len) {
+  long i, cap = node->_cap, index = node->_index;
   double value = (double)node->_value;
   for (i = index; i >= 0; i--) {
     Item* item = itemArray[i];
-    int diff = cap - item->_weight;
+    long diff = cap - item->_weight;
     if(diff > 0){
       cap = diff;
       value = value + item->_profit;
@@ -83,7 +83,7 @@ void* bb(void* SQueue) {
 void pathtranverse(heap_t* theQueue, PQNode* original){
   Item** itemArray = theQueue->_itArrayptr;
   while (original->_cap != 0 && original->_index != 0) {
-    int index = original->_index;
+    unsigned long index = original->_index;
     calculateUpperBound(itemArray,original,theQueue->_arraylength);
     if(original->_ub < lb->_lb) break;
     original->_left = (PQNode*)malloc(sizeof(PQNode));
@@ -133,14 +133,14 @@ int main(int argc, char* argv[]) {
   char* filename = argv[1];
   FILE* fp; 
   fp = fopen(filename, "r");
-  int len, i, capacity;
-  fscanf(fp,"%d",&len);
+  unsigned long len, i, capacity;
+  fscanf(fp,"%lu",&len);
   //number is useless, we just need it as a parameter for scanning
-  int number,weight,profit;
+  unsigned long number,weight,profit;
   Item** itemArray = (Item**)malloc(sizeof(Item*)*len);
   for (i = 0; i < len; i++) {
     Item* n = (Item*)malloc(sizeof(Item));
-    fscanf(fp,"%d %d %d", &number, &profit, &weight);
+    fscanf(fp,"%lu %lu %lu", &number, &profit, &weight);
     double ratio = (double)profit/(double)weight;
     n->_weight = weight;
     n->_profit = profit;
@@ -148,7 +148,7 @@ int main(int argc, char* argv[]) {
     itemArray[i] = n;
   }
   //get max capacity
-  fscanf(fp,"%d",&capacity);
+  fscanf(fp,"%lu",&capacity);
   qsort(itemArray, len, sizeof(Item*),compare); 
   fclose(fp);
   //the main part of the assignment
@@ -161,9 +161,9 @@ int main(int argc, char* argv[]) {
   sharedQ->_itArrayptr = itemArray;
   sharedQ->_arraylength = len;
   PQNode* startnode = (PQNode*)malloc(sizeof(PQNode));
-  pthread_mutex_init(&mtx, NULL);
+  //pthread_mutex_init(&mtx, NULL);
   lb  = (LBound*)malloc(sizeof(LBound));
-  pthread_rwlock_init(&lb->_lock, NULL);
+  //pthread_rwlock_init(&lb->_lock, NULL);
   lb->_lb = 0;
   startnode->_lb  = lb;
   startnode->_value = 0;
@@ -180,12 +180,12 @@ int main(int argc, char* argv[]) {
   }
   for(i=0;i<nthreads;i++)
     pthread_join(threads[i],&exitStatus);
-   printf("lower bound is: %d \n",lb->_lb);
+   printf("lower bound is: %lu \n",lb->_lb);
   clock_t toc = clock();
   printf("Elapsed: %f seconds \n", (double)(toc-tic)/CLOCKS_PER_SEC);
   destroyQueue(sharedQ);
-  pthread_mutex_destroy(&mtx);
-  pthread_rwlock_destroy(&lb->_lock);
+  //pthread_mutex_destroy(&mtx);
+  //pthread_rwlock_destroy(&lb->_lock);
   free(lb);
   for (i = 0; i< len; i++)
     free(itemArray[i]);
