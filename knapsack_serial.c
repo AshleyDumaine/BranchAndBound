@@ -32,7 +32,7 @@ void enQueueWork(heap_t* twq,PQNode* t)
   enQueue(twq,t);
 }
 
-void calculateUpperBound(Item** itemArray,PQNode* node, unsigned long len) {
+void calculateUpperBound(Item** itemArray,PQNode* node, long len) {
   long i, cap = node->_cap, index = node->_index;
   double value = (double)node->_value;
   for (i = index; i >= 0; i--) {
@@ -83,7 +83,7 @@ void* bb(void* SQueue) {
 void pathtranverse(heap_t* theQueue, PQNode* original){
   Item** itemArray = theQueue->_itArrayptr;
   while (original->_cap != 0 && original->_index != 0) {
-    unsigned long index = original->_index;
+    long index = original->_index;
     calculateUpperBound(itemArray,original,theQueue->_arraylength);
     if(original->_ub < lb->_lb) break;
     original->_left = (PQNode*)malloc(sizeof(PQNode));
@@ -133,10 +133,10 @@ int main(int argc, char* argv[]) {
   char* filename = argv[1];
   FILE* fp; 
   fp = fopen(filename, "r");
-  unsigned long len, i, capacity;
+  long len, i, capacity;
   fscanf(fp,"%lu",&len);
   //number is useless, we just need it as a parameter for scanning
-  unsigned long number,weight,profit;
+  long number,weight,profit;
   Item** itemArray = (Item**)malloc(sizeof(Item*)*len);
   for (i = 0; i < len; i++) {
     Item* n = (Item*)malloc(sizeof(Item));
