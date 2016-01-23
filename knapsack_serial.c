@@ -7,7 +7,6 @@
 #include "heap.h"
 
 LBound* lb; //lower bound global
-//pthread_mutex_t mtx;
 PQNode* deQueueWork(heap_t* twq);
 void enQueueWork(heap_t* twq,PQNode* t);
 void pathtranverse(heap_t* theQueue, PQNode* original);
@@ -20,15 +19,13 @@ int compare (const void* a, const void* b) {
   else return 0;
 }
 
-PQNode* deQueueWork(heap_t* twq)
-{
+PQNode* deQueueWork(heap_t* twq){
   if (isEmpty(twq))return NULL; 
   PQNode* n = deQueue(twq);
   return n;
 }
 
-void enQueueWork(heap_t* twq,PQNode* t)
-{
+void enQueueWork(heap_t* twq,PQNode* t){
   enQueue(twq,t);
 }
 
@@ -126,6 +123,7 @@ void pathtranverse(heap_t* theQueue, PQNode* original){
 }
 
 int main(int argc, char* argv[]) {
+  clock_t tic = clock();
   if(argc != 2) {
     fprintf(stderr, "usage: knapsack_serial filename\n");
     return 1;
@@ -135,7 +133,6 @@ int main(int argc, char* argv[]) {
   fp = fopen(filename, "r");
   long len, i, capacity;
   fscanf(fp,"%lu",&len);
-  //number is useless, we just need it as a parameter for scanning
   long number,weight,profit;
   Item** itemArray = (Item**)malloc(sizeof(Item*)*len);
   for (i = 0; i < len; i++) {
@@ -151,7 +148,6 @@ int main(int argc, char* argv[]) {
   fscanf(fp,"%lu",&capacity);
   qsort(itemArray, len, sizeof(Item*),compare); 
   fclose(fp);
-  //the main part of the assignment
   int nthreads = 1;
   int status;
   void* exitStatus;
@@ -161,16 +157,13 @@ int main(int argc, char* argv[]) {
   sharedQ->_itArrayptr = itemArray;
   sharedQ->_arraylength = len;
   PQNode* startnode = (PQNode*)malloc(sizeof(PQNode));
-  //pthread_mutex_init(&mtx, NULL);
   lb  = (LBound*)malloc(sizeof(LBound));
-  //pthread_rwlock_init(&lb->_lock, NULL);
   lb->_lb = 0;
   startnode->_lb  = lb;
   startnode->_value = 0;
   startnode->_cap = capacity;
   startnode->_index = len-1;
   enQueueWork(sharedQ, startnode);
-  clock_t tic = clock();
   for(i=0;i<nthreads;i++){
     status = pthread_create(&threads[i],NULL,bb,(void*)sharedQ);
     if(status){
@@ -184,8 +177,6 @@ int main(int argc, char* argv[]) {
   clock_t toc = clock();
   printf("Elapsed: %f seconds \n", (double)(toc-tic)/CLOCKS_PER_SEC);
   destroyQueue(sharedQ);
-  //pthread_mutex_destroy(&mtx);
-  //pthread_rwlock_destroy(&lb->_lock);
   free(lb);
   for (i = 0; i< len; i++)
     free(itemArray[i]);

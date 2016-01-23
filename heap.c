@@ -20,7 +20,7 @@ int heap_compare(void *a, void *b) {
 }                                                                              
 heap_t *heap_create(long size)
 {
-  heap_t *h = calloc(1, sizeof(heap_t));
+  heap_t *h = (heap_t *) calloc(1, sizeof(heap_t));
   if (h == NULL) return NULL;
   h->last = -1;
   h->size = size;
@@ -39,7 +39,7 @@ int heap_resize(heap_t *h, long size)
 {
   printf("RESIZING HEAP\n");
   if (size <= h->size) return -1;
-  void **H = calloc(size, sizeof(void*));
+  void **H = (void **) calloc(size, sizeof(void*));
   if (H == NULL) {
     printf("OUT OF MEMORY\n");
     exit(-1);
@@ -54,15 +54,13 @@ int heap_resize(heap_t *h, long size)
 int heap_insert(heap_t *h, void *item)
 {
   if (h->last == h->size){ 
-    //heap_resize(h,h->size*2);
     return -1;
   }
   if (item == NULL)
     return -1;
   long i = ++h->last;
-  void **H = h->data;
+  void **H = (void **) h->data;
   H[i] = item;
-  //printf("GOT HERE\n");
   while (i > 0 && heap_compare(item, H[HEAP_PARENT(i)])) {
     H[i] = H[HEAP_PARENT(i)];
     H[HEAP_PARENT(i)] = item;
@@ -73,7 +71,7 @@ int heap_insert(heap_t *h, void *item)
 
 void *heap_remove_root(heap_t *h)
 {
-  void **H = h->data;
+  void **H = (void **) h->data;
   void *temp, *root = H[0];
   long i = 0, left, right, child;
   if (h->last < 0) return NULL;
