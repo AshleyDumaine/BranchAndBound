@@ -1,13 +1,14 @@
-#include <vector>
-#include <stdio.h>
-#include "priorityQueue.h"
-#include <stdlib.h>
-#include <string.h>
-#include <pthread.h>
-#include <time.h>
 #include "heap.h"
+#include "priorityQueue.h"
 #include <algorithm>
 #include <iostream>
+#include <iostream>
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <vector>
 
 LBound* lb; //lower bound global
 PQNode* deQueueWork(heap_t* twq);
@@ -126,12 +127,12 @@ int main(int argc, char* argv[]) {
   FILE* fp; 
   fp = fopen(filename, "r");
   long len, i, capacity;
-  fscanf(fp,"%lu",&len);
+  if (!fscanf(fp,"%lu",&len)) std::cout << "fscanf failed" << std::endl;
   long number,weight,profit;
   std::vector<Item*> itemArray(len);
   for (i = 0; i < len; i++) {
     Item* n = (Item*)malloc(sizeof(Item));
-    fscanf(fp,"%lu %lu %lu", &number, &profit, &weight);
+    if (!fscanf(fp,"%lu %lu %lu", &number, &profit, &weight)) std::cout << "fscanf failed" << std::endl;
     double ratio = (double)profit/(double)weight;
     n->_weight = weight;
     n->_profit = profit;
@@ -139,7 +140,7 @@ int main(int argc, char* argv[]) {
     itemArray[i] = n;
   }
   //get max capacity
-  fscanf(fp,"%lu",&capacity);
+  if (!fscanf(fp,"%lu",&capacity)) std::cout << "fscanf failed" << std::endl;
 
   std::sort(itemArray.begin(), itemArray.end(), compare);
   fclose(fp);
@@ -162,7 +163,7 @@ int main(int argc, char* argv[]) {
   for(i=0;i<nthreads;i++){
     status = pthread_create(&threads[i],NULL,bb,(void*)sharedQ);
     if(status){
-      printf("ERROR; return code from pthread_create() is %d\n", status);
+      std::cout << "ERROR; return code from pthread_create() is " << status << std::endl;
       exit(-1);
     }
   }
