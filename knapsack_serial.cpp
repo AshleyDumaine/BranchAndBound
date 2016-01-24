@@ -18,10 +18,6 @@ bool compare (const Item* a, const Item* b) {
   return a->_ratio < b->_ratio;
 }
 
-PQNode* deQueueWork(heap_t* twq) {
-  return deQueue(twq);
-}
-
 void calculateUpperBound(Item** itemArray,PQNode* node, long len) {
   long i, cap = node->_cap, index = node->_index;
   double value = (double)node->_value;
@@ -47,7 +43,7 @@ void* bb(void* SQueue) {
   heap_t* theQueue = (heap_t*)SQueue;
   while(1){
     PQNode* original = deQueue(theQueue);
-    if (!original) pthread_exit(0);
+    if (!original) return lb; 
     node_count++;
     Item** itemArray = theQueue->_itArrayptr;    
     if(original->_index == 0){
@@ -145,10 +141,8 @@ int main(int argc, char* argv[]) {
   }
   std::sort(itemArray.begin(), itemArray.end(), compare);
   fclose(fp);
-  int nthreads = 1;
   int status;
   void* exitStatus;
-  pthread_t threads[nthreads];
   heap_t* sharedQ = makeQueue(len*10);
   sharedQ->_isDone = 0;
   sharedQ->_itArrayptr = itemArray.data();
@@ -161,15 +155,7 @@ int main(int argc, char* argv[]) {
   startnode->_cap = capacity;
   startnode->_index = len-1;
   enQueue(sharedQ, startnode);
-  for(i = 0; i < nthreads; i++) {
-    status = pthread_create(&threads[i], NULL, bb, (void*)sharedQ);
-    if(status) {
-      std::cout << "ERROR; return code from pthread_create() is " << status << std::endl;
-      return 1;
-    }
-  }
-  for(i = 0; i < nthreads; i++)
-    pthread_join(threads[i], &exitStatus);
+  lb = (LBound*)bb(sharedQ);
   clock_t toc = clock();
   printf("Optimal value: %lu \nOptimality: 1\n", lb->_lb);
   printf("%f seconds \n", (double)(toc-tic)/CLOCKS_PER_SEC);
