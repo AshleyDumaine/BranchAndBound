@@ -5,8 +5,7 @@
 
 typedef struct Item {
   double _ratio;
-  long _weight;
-  long _profit;
+  long _weight, _profit;
 } Item;
 
 typedef struct heap_t_ {

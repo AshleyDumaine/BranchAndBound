@@ -26,6 +26,5 @@ void enQueue(heap_t* q,PQNode* node) {
 }
 
 PQNode* deQueue(heap_t* q) {
-  PQNode* rv = (PQNode*)heap_remove_root(q);
-  return rv;
+  return (PQNode*)heap_remove_root(q);
 }

@@ -5,16 +5,16 @@
 #include "heap.h"
 typedef struct PQNode {
   long _value, _cap, _index;
-  int _leftDone, _rightDone;
   double _ub;
+  int _leftDone, _rightDone;
   struct LBound* _lb;
   struct PQNode* _left;
   struct PQNode* _right;
 } PQNode;
 
 typedef struct LBound {
-  pthread_spinlock_t _lock;
   long _lb;
+  pthread_spinlock_t _lock;
 } LBound;
 
 typedef struct priorityQueue {
