@@ -1,9 +1,9 @@
 #include "heap.h"
-#include <errno.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include "priorityQueue.h"
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 // Macros for accessing left/right/parent indices for a heap node             
 #define HEAP_LEFT(i) (2*i+1)

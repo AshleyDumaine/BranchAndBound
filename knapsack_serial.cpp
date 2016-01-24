@@ -18,6 +18,10 @@ bool compare (const Item* a, const Item* b) {
   return a->_ratio < b->_ratio;
 }
 
+PQNode* deQueueWork(heap_t* twq) {
+  return deQueue(twq);
+}
+
 void calculateUpperBound(Item** itemArray,PQNode* node, long len) {
   long i, cap = node->_cap, index = node->_index;
   double value = (double)node->_value;

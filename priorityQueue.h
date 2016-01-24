@@ -32,4 +32,3 @@ void enQueue(heap_t* theQueue, PQNode* n);
 PQNode* deQueue(heap_t* theQueue);
 int isEmpty(heap_t* theQueue);
 #endif
-
