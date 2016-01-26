@@ -1,5 +1,4 @@
 #include "heap.h"
-#include "priorityQueue.h"
 #include <algorithm>
 #include <iostream>
 #include <pthread.h>
@@ -11,16 +10,12 @@
 
 LBound* lb; //lower bound global
 pthread_mutex_t mtx;
-PQNode* deQueueWork(heap_t* twq);
-void enQueueWork(heap_t* twq,PQNode* t);
-void pathtranverse(heap_t* theQueue, PQNode* original);
 
 bool compare (const Item* a, const Item* b) {
   return a->_ratio < b->_ratio;
 }
 
-PQNode* deQueueWork(heap_t* twq)
-{
+PQNode* deQueueWork(heap_t* twq) {
   pthread_mutex_lock(&twq->_lock);
   while (isEmpty(twq)) {
     if(twq->_isDone == 0) 
@@ -30,15 +25,14 @@ PQNode* deQueueWork(heap_t* twq)
       return NULL; 
     }
   }
-  PQNode* n = deQueue(twq);
+  PQNode* n = (PQNode*)heap_remove_root(twq);
   pthread_mutex_unlock(&twq->_lock);
   return n;
 }
 
-void enQueueWork(heap_t* twq,PQNode* t)
-{
+void enQueueWork(heap_t* twq,PQNode* t) {
   pthread_mutex_lock(&twq->_lock);
-  enQueue(twq,t);
+  heap_insert(twq,t);
   pthread_cond_signal(&twq->_cond);
   pthread_mutex_unlock(&twq->_lock);
 }
@@ -68,58 +62,12 @@ void calculateUpperBound(Item** itemArray,PQNode* node, long len) {
   node->_ub = value;
 }
 
-void* bb(void* SQueue) {
-  heap_t* theQueue = (heap_t*)SQueue;
-  while(1){   
-    pthread_mutex_lock(&theQueue->_lock); //lock
-    if (isEmpty(theQueue) && theQueue->_awakeThreads == 1){
-      pthread_cond_broadcast(&(theQueue->_cond));
-      theQueue->_isDone = 1;
-    }
-    else
-      theQueue->_awakeThreads--;
-    pthread_mutex_unlock(&theQueue->_lock); //unlock
-    //    printf("awake threads % d \n",theQueue->_awakeThreads);
-    PQNode* original = deQueueWork(theQueue);
-    if (original==NULL)
-      pthread_exit(0);
-    pthread_mutex_lock(&theQueue->_lock); //lock
-    theQueue->_awakeThreads++;
-    pthread_mutex_unlock(&theQueue->_lock); //unlock
-    Item** itemArray = theQueue->_itArrayptr;    
-    if(original->_index == 0){
-      if(original->_cap >= itemArray[0]->_weight)
-	original->_value = itemArray[0]->_profit + original->_value;
-      if(original->_value > lb->_lb){
-	pthread_spin_lock(&lb->_lock); //lock
-	lb->_lb = original->_value; //write
-	pthread_spin_unlock(&lb->_lock); //unlock
-      }
-      free(original);
-    }
-    else if(original->_cap == 0){      
-      if(original->_value > lb->_lb){
-	pthread_spin_lock(&lb->_lock); //lock
-	lb->_lb= original->_value; //write
-	pthread_spin_unlock(&lb->_lock); //unlock
-      }
-      free(original);
-    }
-    else{
-      pathtranverse(theQueue, original);
-    }
-    if(isEmpty(theQueue))
-      continue;
-  }
-}
-
 void pathtranverse(heap_t* theQueue, PQNode* original_x){
   Item** itemArray = theQueue->_itArrayptr;
-  heap_t* myQueue = makeQueue(theQueue->size);
-  //int bool = 0;
-  enQueue(myQueue,original_x);
+  heap_t* myQueue = heap_create(theQueue->size);
+  heap_insert(myQueue,original_x);
   while(!isEmpty(myQueue)){
-    PQNode* original = deQueue(myQueue);
+    PQNode* original = (PQNode*)heap_remove_root(myQueue);
   while (original->_cap != 0 && original->_index != 0) {
     long index = original->_index;
     calculateUpperBound(itemArray,original,theQueue->_arraylength);
@@ -129,25 +77,19 @@ void pathtranverse(heap_t* theQueue, PQNode* original_x){
     original->_right = (PQNode*)malloc(sizeof(PQNode));
     PQNode* left = original->_left;
     PQNode* right = original->_right;
-    //lock?
     right->_lb = lb;
     left->_lb = lb;
-    //unlock?
     right->_index = (original->_index) - 1;
     right->_cap = original->_cap;
     right->_value = original->_value;
     calculateUpperBound(itemArray,right,theQueue->_arraylength);
     if(right->_ub > lb->_lb){
-      //enQueueWork(theQueue,right);
       if(theQueue->_awakeThreads == 1){
       enQueueWork(theQueue,right);
-      //bool = 1;
       }
       else{
-	enQueue(myQueue,right);
-	//bool = 0;
+	heap_insert(myQueue,right);
       }
-      
     }
     else
       free(right);
@@ -182,8 +124,51 @@ void pathtranverse(heap_t* theQueue, PQNode* original_x){
   }
   free(original);
   }
-  destroyQueue(myQueue);
+  heap_free(myQueue);
   return;
+}
+void* bb(void* SQueue) {
+  heap_t* theQueue = (heap_t*)SQueue;
+  while(1){   
+    pthread_mutex_lock(&theQueue->_lock); //lock
+    if (isEmpty(theQueue) && theQueue->_awakeThreads == 1){
+      pthread_cond_broadcast(&(theQueue->_cond));
+      theQueue->_isDone = 1;
+    }
+    else
+      theQueue->_awakeThreads--;
+    pthread_mutex_unlock(&theQueue->_lock); //unlock
+    PQNode* original = deQueueWork(theQueue);
+    if (original==NULL)
+      pthread_exit(0);
+    pthread_mutex_lock(&theQueue->_lock); //lock
+    theQueue->_awakeThreads++;
+    pthread_mutex_unlock(&theQueue->_lock); //unlock
+    Item** itemArray = theQueue->_itArrayptr;    
+    if(original->_index == 0){
+      if(original->_cap >= itemArray[0]->_weight)
+	original->_value = itemArray[0]->_profit + original->_value;
+      if(original->_value > lb->_lb){
+	pthread_spin_lock(&lb->_lock); //lock
+	lb->_lb = original->_value; //write
+	pthread_spin_unlock(&lb->_lock); //unlock
+      }
+      free(original);
+    }
+    else if(original->_cap == 0){      
+      if(original->_value > lb->_lb){
+	pthread_spin_lock(&lb->_lock); //lock
+	lb->_lb= original->_value; //write
+	pthread_spin_unlock(&lb->_lock); //unlock
+      }
+      free(original);
+    }
+    else{
+      pathtranverse(theQueue, original);
+    }
+    if(isEmpty(theQueue))
+      continue;
+  }
 }
 
 int main(int argc, char* argv[]) {
@@ -211,12 +196,11 @@ int main(int argc, char* argv[]) {
   if (!fscanf(fp,"%lu",&capacity)) std::cout << "fscanf failed" << std::endl;
   std::sort(itemArray.begin(), itemArray.end(), compare);
   fclose(fp);
-  //the main part of the assignment
   int nthreads = atoi(argv[2]);
   int status;
   void* exitStatus;
   pthread_t threads[nthreads];
-  heap_t* sharedQ = makeQueue(len*10);
+  heap_t* sharedQ = heap_create(len*10);
   sharedQ->_isDone = 0;
   sharedQ->_itArrayptr = itemArray.data();
   sharedQ->_arraylength = len;
@@ -244,7 +228,7 @@ int main(int argc, char* argv[]) {
   printf("optimal value: %lu \n",lb->_lb);
   clock_t toc = clock();
   printf("Elapsed: %f seconds \n", (double)(toc-tic)/CLOCKS_PER_SEC);
-  destroyQueue(sharedQ);
+  heap_free(sharedQ);
   pthread_mutex_destroy(&mtx);
   pthread_spin_destroy(&lb->_lock);
   free(lb);

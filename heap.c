@@ -1,5 +1,4 @@
 #include "heap.h"
-#include "priorityQueue.h"
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,6 +26,10 @@ heap_t *heap_create(long size) {
 void heap_free(heap_t *h) {
   free(h->data);
   free(h);
+}
+
+int isEmpty(heap_t* theQueue) {
+  return theQueue->last < 0;
 }
 
 int heap_resize(heap_t *h, long size) {

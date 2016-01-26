@@ -1,5 +1,4 @@
 #include "heap.h"
-#include "priorityQueue.h"
 #include <algorithm>
 #include <iostream>
 #include <iostream>
@@ -12,7 +11,6 @@
 
 long node_count = 0;
 LBound* lb; //lower bound global
-void pathtranverse(heap_t* theQueue, PQNode* original);
 
 bool compare (const Item* a, const Item* b) {
   return a->_ratio < b->_ratio;
@@ -39,31 +37,6 @@ void calculateUpperBound(Item** itemArray,PQNode* node, long len) {
   node->_ub = value;
 }
 
-void* bb(void* SQueue) {
-  heap_t* theQueue = (heap_t*)SQueue;
-  while(1){
-    PQNode* original = deQueue(theQueue);
-    if (!original) return lb; 
-    node_count++;
-    Item** itemArray = theQueue->_itArrayptr;    
-    if(original->_index == 0){
-      if(original->_cap >= itemArray[0]->_weight)
-	original->_value += itemArray[0]->_profit;
-      if(original->_value >= lb->_lb)
-	lb->_lb = original->_value;
-      free(original);
-    }
-    else if(original->_cap == 0){
-      if(original->_value >= lb->_lb)
-	lb->_lb= original->_value;
-      free(original);
-    }
-    else
-      pathtranverse(theQueue, original);
-    if(isEmpty(theQueue)) continue;
-  }
-}
-
 void pathtranverse(heap_t* theQueue, PQNode* original){
   Item** itemArray = theQueue->_itArrayptr;
   while (original->_cap != 0 && original->_index != 0) {
@@ -80,7 +53,7 @@ void pathtranverse(heap_t* theQueue, PQNode* original){
     right->_cap = original->_cap;
     right->_value = original->_value;
     calculateUpperBound(itemArray, right, theQueue->_arraylength);
-    if(right->_ub > lb->_lb) enQueue(theQueue, right);
+    if(right->_ub > lb->_lb) heap_insert(theQueue, right);
     else free(right);
     left->_index = (original->_index) - 1;
     left->_cap =  original->_cap - itemArray[index]->_weight;
@@ -107,6 +80,31 @@ void pathtranverse(heap_t* theQueue, PQNode* original){
     lb->_lb = original->_value;
   free(original);
   return;
+}
+
+void* bb(heap_t* theQueue) {
+  //heap_t* theQueue = (heap_t*)SQueue;
+  while(1){
+    PQNode* original = (PQNode*)heap_remove_root(theQueue);
+    if (!original) return lb; 
+    node_count++;
+    Item** itemArray = theQueue->_itArrayptr;    
+    if(original->_index == 0){
+      if(original->_cap >= itemArray[0]->_weight)
+	original->_value += itemArray[0]->_profit;
+      if(original->_value >= lb->_lb)
+	lb->_lb = original->_value;
+      free(original);
+    }
+    else if(original->_cap == 0){
+      if(original->_value >= lb->_lb)
+	lb->_lb= original->_value;
+      free(original);
+    }
+    else
+      pathtranverse(theQueue, original);
+    if(isEmpty(theQueue)) continue;
+  }
 }
 
 int main(int argc, char* argv[]) {
@@ -143,7 +141,7 @@ int main(int argc, char* argv[]) {
   fclose(fp);
   int status;
   void* exitStatus;
-  heap_t* sharedQ = makeQueue(len*10);
+  heap_t* sharedQ = heap_create(len*10);
   sharedQ->_isDone = 0;
   sharedQ->_itArrayptr = itemArray.data();
   sharedQ->_arraylength = len;
@@ -154,13 +152,13 @@ int main(int argc, char* argv[]) {
   startnode->_value = 0;
   startnode->_cap = capacity;
   startnode->_index = len-1;
-  enQueue(sharedQ, startnode);
+  heap_insert(sharedQ, startnode);
   lb = (LBound*)bb(sharedQ);
   clock_t toc = clock();
   printf("Optimal value: %lu \nOptimality: 1\n", lb->_lb);
   printf("%f seconds \n", (double)(toc-tic)/CLOCKS_PER_SEC);
   printf("Nodes traversed: %lu \n", node_count);
-  destroyQueue(sharedQ);
+  heap_free(sharedQ);
   free(lb);
   for (i = 0; i < len; i++)
     free(itemArray[i]);
