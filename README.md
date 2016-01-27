@@ -22,6 +22,7 @@ As expected, dynamic programming works well only on very small problem
 instances. For the sample instance of 32, it didn’t return after over 5 
 minutes, but it did complete in 4.572611 seconds and return the correct optimal 
 value of 604 for the following test instance:
+```
 20
 	1	19 	1
 	2	39	52
@@ -44,7 +45,7 @@ value of 604 for the following test instance:
    	19	63	73
    	20	19	99
 370
-
+```
 ##Greedy Approach
 Due to the nature of the greedy algorithm and the fact that the problem is 0/1 
 knapsack instead of fractional, the greedy solution returns very quickly, but 
