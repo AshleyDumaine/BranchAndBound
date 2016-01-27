@@ -1,6 +1,6 @@
-###Ashley Dumaine
-###CSE5095 Spring 2016
-###Discrete Optimization
+#####Ashley Dumaine
+#####CSE5095 Spring 2016
+#####Discrete Optimization
 
 Assignment 1
 ------------
@@ -18,7 +18,7 @@ case of greedy knapsack or within a reasonable amount of time in the case of
 dynamic programming and branch and bound.
 
 ##Dynamic Programming Approach
-	As expected, dynamic programming works well only on very small problem 
+As expected, dynamic programming works well only on very small problem 
 instances. For the sample instance of 32, it didn’t return after over 5 
 minutes, but it did complete in 4.572611 seconds and return the correct optimal 
 value of 604 for the following test instance:
@@ -80,7 +80,7 @@ on.
 Below is the old CSE3100 C vs new C++ version runtume for the serial 
 implementation of branch and bound and the multithreaded version with only 2 
 threads, respectively:
-
+```
 x@ubuntu:~/Desktop/CSE5095$ ./knapsack\_serial data/t100.txt
 lower bound is: 3208
 Elapsed: 4.747830 seconds
@@ -95,7 +95,7 @@ time to solve: 14.123101 seconds
 x@ubuntu:~/Desktop/CSE5095$ ./speedy\_knapsack data/t100.txt 2
 lower bound is: 3208
 Elapsed: 7.437743 seconds
-
+```
 ##Other Remarks
 To test the final version of branch and bound, a trivial Python instance 
 generator was written. It was observed in a sample branch and bound test case 
