@@ -16,18 +16,22 @@ bool compare (const Item* a, const Item* b) {
   return a->_ratio < b->_ratio;
 }
 
-void calculateUpperBound(Item** itemArray,PQNode* node, long len) {
+void calculateUpperBound(Item** itemArray, PQNode* node, long len) {
   long i, cap = node->_cap, index = node->_index;
   double value = (double)node->_value;
   for (i = index; i >= 0; i--) {
     Item* item = itemArray[i];
     long diff = cap - item->_weight;
+    // if it fits...
     if(diff >= 0) {
+      // put the item in the knapsack and adjust profit and cap
       cap = diff;
       value += item->_profit;
+      // stop if full
       if(diff == 0) break;
     }
     else {
+      // take a fraction of the item that will fit in the knapsack
       double div = ((double)cap/(item->_weight));
       double newp = div*((double)(item->_profit));
       value += newp;
@@ -83,7 +87,6 @@ void pathtranverse(heap_t* theQueue, PQNode* original){
 }
 
 void* bb(heap_t* theQueue) {
-  //heap_t* theQueue = (heap_t*)SQueue;
   while(1){
     PQNode* original = (PQNode*)heap_remove_root(theQueue);
     if (!original) return lb; 
@@ -127,10 +130,10 @@ int main(int argc, char* argv[]) {
       std::cout << "fscanf failed" << std::endl;
       return 1;
     }
-    double ratio = (double)profit/weight;
+    // maybe instead of ratio use a different heuristic
     n->_weight = weight;
     n->_profit = profit;
-    n->_ratio = ratio;
+    n->_ratio = ((double)profit)/weight;
     itemArray[i] = n;
   }
   if (!fscanf(fp,"%lu",&capacity)) {
@@ -141,7 +144,7 @@ int main(int argc, char* argv[]) {
   fclose(fp);
   int status;
   void* exitStatus;
-  heap_t* sharedQ = heap_create(len*10);
+  heap_t* sharedQ = heap_create(len);
   sharedQ->_isDone = 0;
   sharedQ->_itArrayptr = itemArray.data();
   sharedQ->_arraylength = len;

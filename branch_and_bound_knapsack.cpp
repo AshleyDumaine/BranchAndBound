@@ -200,7 +200,7 @@ int main(int argc, char* argv[]) {
   int status;
   void* exitStatus;
   pthread_t threads[nthreads];
-  heap_t* sharedQ = heap_create(len*10);
+  heap_t* sharedQ = heap_create(len);
   sharedQ->_isDone = 0;
   sharedQ->_itArrayptr = itemArray.data();
   sharedQ->_arraylength = len;
