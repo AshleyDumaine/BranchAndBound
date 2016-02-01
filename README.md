@@ -1,6 +1,6 @@
-###Ashley Dumaine
-###CSE5095 Spring 2016
-###Discrete Optimization
+#####Ashley Dumaine
+#####CSE5095 Spring 2016
+#####Discrete Optimization
 
 Assignment 1
 ------------
@@ -18,10 +18,11 @@ case of greedy knapsack or within a reasonable amount of time in the case of
 dynamic programming and branch and bound.
 
 ##Dynamic Programming Approach
-	As expected, dynamic programming works well only on very small problem 
+As expected, dynamic programming works well only on very small problem 
 instances. For the sample instance of 32, it didn’t return after over 5 
 minutes, but it did complete in 4.572611 seconds and return the correct optimal 
 value of 604 for the following test instance:
+```
 20
 	1	19 	1
 	2	39	52
@@ -44,7 +45,7 @@ value of 604 for the following test instance:
    	19	63	73
    	20	19	99
 370
-
+```
 ##Greedy Approach
 Due to the nature of the greedy algorithm and the fact that the problem is 0/1 
 knapsack instead of fractional, the greedy solution returns very quickly, but 
@@ -80,7 +81,7 @@ on.
 Below is the old CSE3100 C vs new C++ version runtume for the serial 
 implementation of branch and bound and the multithreaded version with only 2 
 threads, respectively:
-
+```
 x@ubuntu:~/Desktop/CSE5095$ ./knapsack\_serial data/t100.txt
 lower bound is: 3208
 Elapsed: 4.747830 seconds
@@ -95,6 +96,7 @@ time to solve: 14.123101 seconds
 x@ubuntu:~/Desktop/CSE5095$ ./speedy\_knapsack data/t100.txt 2
 lower bound is: 3208
 Elapsed: 7.437743 seconds
+```
 
 One last-minute realization was that the runtime and number of branch and 
 bound nodes was related to the initial heap size. The old code from CSE3100 
@@ -104,6 +106,7 @@ heap size to only the length of the items to choose from still yields the
 correct answer as much as 30 times faster using tougher100.txt as the 
 benchmark:
 
+```
 ashley@ubuntu:~/Desktop/BranchAndBound-master$ ./serial\_bnb data/tougher100.txt
 Optimal value: 3148 
 Optimality: 1
@@ -115,6 +118,7 @@ Optimal value: 3148
 Optimality: 1
 0.107571 seconds 
 Nodes traversed: 803316 
+```
 
 Although less nodes are traversed, the answer is still correct, confirmed on 
 several other knapsack instances.
