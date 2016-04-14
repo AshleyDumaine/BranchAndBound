@@ -7,6 +7,7 @@
 #include <string.h>
 #include <time.h>
 #include <vector>
+#include <unistd.h>
 
 long node_count = 0;
 LBound* lb; //lower bound global
@@ -138,6 +139,11 @@ int main(int argc, char* argv[]) {
   if (!fscanf(fp,"%lu",&capacity)) {
     std::cout << "fscanf failed" << std::endl;
     return 1;
+  }
+
+  if (capacity * len < 5000000) {
+	int ret = execl("./dp_knapsack", "./dp_knapsack", argv[1], (char *)0);
+	return 0;
   }
   std::sort(itemArray.begin(), itemArray.end(), compare);
   fclose(fp);

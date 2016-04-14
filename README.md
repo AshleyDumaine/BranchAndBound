@@ -6,19 +6,19 @@ Assignment 1
 ------------
 
 ##Introduction
-Dynamic programming, the greedy algorithm, and branch and bound were explored
-and compared in C++, Python, and C respectively to find a feasible solution to 
-the knapsack problem. Python was chosen for the greedy solution since the 
-quick linear algorithm makes Python’s slowness negligible. C++ and C were 
-chosen for the other two methods since both are time-consuming as they explore 
-potentially an extremely large amount of solutions and are non-linear 
-algorithms. Based on the problem instance, each of these algorithms have 
-varying abilities of computing the solution that’s either acceptable in the 
-case of greedy knapsack or within a reasonable amount of time in the case of 
-dynamic programming and branch and bound.
+The recurisive algorithm, dynamic programming, the greedy algorithm, and branch 
+and bound, and a combination of both branch and bound and dynamic programming 
+were explored and compared in C++, Python, and C to find a feasible solution to
+the knapsack problem. Python was chosen for the greedy solution since the quick 
+linear algorithm makes Python’s slowness negligible. C++/C was chosen for the 
+other methods since they can be time-consuming as they explore potentially an 
+extremely large amount of solutions and are non-linear algorithms. Based on the 
+problem instance, each of these algorithms have varying abilities of computing 
+the solution that’s either acceptable in the case of greedy knapsack or within 
+a reasonable amount of time in the case of the others.
 
-##Dynamic Programming Approach
-As expected, dynamic programming works well only on very small problem 
+##Recursive Approach
+As expected, regular recursion works well only on very small problem 
 instances. For the sample instance of 32, it didn’t return after over 5 
 minutes, but it did complete in 4.572611 seconds and return the correct optimal 
 value of 604 for the following test instance:
@@ -46,6 +46,31 @@ value of 604 for the following test instance:
    	20	19	99
 370
 ```
+
+##Dynamic Programming Approach
+By instead using dynamic programming and memoization with a results table, the 
+runtime of this algorithm was better than the above method and was able to 
+compute the result to larger knapsack instances. However, this method is only 
+effective when there is a small number of items to choose from and a small 
+capacity due to the O(mn) runtime where m is the number of items and n is the 
+capacity. It was noted on multiple different instances that the dynamic 
+programming solution returned in a comparable time or even in a shorter time 
+than the branch and bound method. After several comparisons with smaller 
+instances (up to 102 elements and a capacity of 500,000), it was determined 
+that generally dynamic programming is faster if the capacity time the number 
+of items is less than 5,000,000. This is a very rough estimate and doesn't 
+mean dynamic programming will always generate a faster solution for under 
+this threshold, however, it does guard against the bizarre cases like 
+input\_10000\_431.txt where branch and bound struggles and dynamic programming 
+easily solves it.
+
+##Combo Approach
+As mentioned above, the most generally effective way to come up with a fast 
+solution to the knapsack problem is to use a certain algorithm based on a 
+threshold involving the capacity and number of items to choose from. To 
+implement this, execl launches the dynamic programming algorithm if the 
+capacity * items value is under 5,000,000 and uses branch and bound otherwise.
+
 ##Greedy Approach
 Due to the nature of the greedy algorithm and the fact that the problem is 0/1 
 knapsack instead of fractional, the greedy solution returns very quickly, but 
@@ -82,10 +107,10 @@ Below is the old CSE3100 C vs new C++ version runtume for the serial
 implementation of branch and bound and the multithreaded version with only 2 
 threads, respectively:
 ```
-x@ubuntu:~/Desktop/CSE5095$ ./knapsack\_serial data/t100.txt
+x@ubuntu:~/Desktop/CSE5095$ ./knapsack_serial data/t100.txt
 lower bound is: 3208
 Elapsed: 4.747830 seconds
-x@ubuntu:~/Desktop/CSE5095$ ./serial\_bnb data/t100.txt
+x@ubuntu:~/Desktop/CSE5095$ ./serial_bnb data/t100.txt
 lower bound is: 3208
 Elapsed: 2.076265 seconds
 
@@ -93,35 +118,37 @@ x@ubuntu:~/Desktop/CSE5095$ ./knapsack data/t100.txt 2
 optimal value: 3208
 optimality: 1
 time to solve: 14.123101 seconds
-x@ubuntu:~/Desktop/CSE5095$ ./speedy\_knapsack data/t100.txt 2
+x@ubuntu:~/Desktop/CSE5095$ ./speedy_knapsack data/t100.txt 2
 lower bound is: 3208
 Elapsed: 7.437743 seconds
 ```
 
 One last-minute realization was that the runtime and number of branch and 
 bound nodes was related to the initial heap size. The old code from CSE3100 
-made the heap 10 times too large in order to avoid possibly having to resize 
+made the heap 5 times too large in order to avoid possibly having to resize 
 the heap. This is actually detrimental to the runtime, as changing the initial 
 heap size to only the length of the items to choose from still yields the 
-correct answer as much as 30 times faster using tougher100.txt as the 
+correct answer almost 10 times faster using tougher100.txt as the 
 benchmark:
 
 ```
-ashley@ubuntu:~/Desktop/BranchAndBound-master$ ./serial\_bnb data/tougher100.txt
+ashley@ubuntu:~/Desktop/BranchAndBound-master$ ./serial_bnb data/tougher100.txt
 Optimal value: 3148 
 Optimality: 1
 2.837460 seconds 
 Nodes traversed: 23980068 
 
-ashley@ubuntu:~/Desktop/BranchAndBound-master$ ./serial\_bnb data/tougher100.txt
+ashley@ubuntu:~/Desktop/BranchAndBound-master$ ./serial_bnb data/tougher100.txt
 Optimal value: 3148 
 Optimality: 1
-0.107571 seconds 
-Nodes traversed: 803316 
+0.303254 seconds 
+Nodes traversed: 2350703 
 ```
 
 Although less nodes are traversed, the answer is still correct, confirmed on 
 several other knapsack instances.
+
+An attempt was made to initially set the lower bound to the greedy solution without the fractional item as this is an obviously feasible lower bound and is easy to calculate. Oddly, this seemed to have no effect on the number of nodes explored and therefore, didn't help to improve the runtime.
 
 ##Other Remarks
 To test the final version of branch and bound, a trivial Python instance 
@@ -134,3 +161,11 @@ solving the resulting test case, one instance was found that generated nearly
 than some other instances generated by the Python instance generator that 
 resulted in less nodes. However, as noted above, fixing the heap size 
 significantly reduced the node count.
+
+##Conclusion
+Overall, the best approach was to use a combination of dynamic programming and 
+branch and bound as they both yield an optimal solution and work well in 
+certain cases. Although it is difficult to predict which cases a certain 
+algorithm will excel, a generalization was made for this assignment that as 
+long as capacity * items < 5,000,000, dynamic programming will yield a fairly 
+quick answer while in the other cases, branch and bound is the best bet.

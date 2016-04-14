@@ -5,28 +5,25 @@
 #include <vector>
 #include <ctime>
 #include <algorithm>
- 
-int dp_knapsack(int weight, int num, std::vector<std::vector<int> > input_list) {
-    std::vector<std::vector<int> > table(num+1, std::vector<int>(weight+1,0));
-    int i, j;
-    for (i = 0; i <= num; i++) {
-	for (j = 0; j <= weight; j++) {
-		if (i == 0 || j == 0) { table.at(i).at(j) = 0; }
-		else if (input_list.at(i - 1).at(2) <= j) {
-		 table.at(i).at(j) = std::max(input_list.at(i - 1).at(1) + 
-			table.at(i - 1).at(j - input_list.at(i - 1).at(2)),
-			table.at(i - 1).at(j));
-		}
-		else table.at(i).at(j) = table.at(i - 1).at(j);
-	}
+
+int recursive_knapsack(int idx, int cap, std::vector<std::vector<int> > contents, std::vector<std::vector<int> > input_list) {
+    if (cap == 0 || idx == input_list.size() - 1) {
+        return 0;
     }
-    return table.at(num).at(weight);
+    else if (cap - input_list.at(idx).at(2) < 0) {
+        return recursive_knapsack(idx+1, cap, contents, input_list);
+    }
+    else {
+	contents.push_back(input_list.at(idx));
+        return std::max(recursive_knapsack(idx+1, cap, contents, input_list), recursive_knapsack(idx+1, cap-input_list.at(idx).at(2), contents, input_list) + input_list.at(idx).at(1));
+    }
 }
 
 int main(int argc, char *argv[]) {
     clock_t start = clock();
     int num_items = 0;
     int cap = 0;
+    std::vector<std::vector<int> > contents;
     
     // read input
     std::ifstream file;
@@ -48,7 +45,7 @@ int main(int argc, char *argv[]) {
 	cap = atoi(str_line.c_str());
 	std::cout.precision(6);
 	std::cout << std::fixed;
-        std::cout << "optimal value: " << dp_knapsack(cap, num_items, input_list) << std::endl; 
+        std::cout << "optimal value: " << recursive_knapsack(0, cap, contents, input_list) << std::endl; 
 	std::cout << "optimality: 1" << std::endl;
 	std::cout << "time to solve: " << double(clock() - start) / (CLOCKS_PER_SEC) << " seconds" << std::endl;
     	file.close();
